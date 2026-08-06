@@ -1,39 +1,64 @@
 .page {
     position: relative;
-    display: flex;
-    flex-direction: column;
+    display: block;
 }
 
+    .page::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.2); /* The "dim" color */
+        z-index: 20; /* Must be higher than main class but lower than sidebar class */
+        opacity: 0;
+        pointer-events: none; /* Allows clicking through the dim when hidden */
+
+        backdrop-filter: blur(1.5px);
+        -webkit-backdrop-filter: blur(1.5px);
+        transition: opacity 0.3s ease;
+    }
+
 main {
-    flex: 1;
+    margin-left: 3.75rem; /* Give navbar room */
+    width: auto;
+    transition: margin-left 0.2s ease;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    /* Overlay */
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1050;
+
+    /* shape */
+    width: 3.75rem;
+    transition: all 0.2s ease;
+    overflow: hidden;
+
+    /* Pretty */
+    background-image: linear-gradient(225deg, hsl(234, 60%, 28%) 50%, hsl(0, 0%, 18%) 70%);
+    backdrop-filter: blur(10px); /* This blurs the content behind the bar */
+    -webkit-backdrop-filter: blur(10px); /* Safari support */
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-}
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
+    .sidebar.sidebar-expanded {
+        width: 250px;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.3);
     }
 
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
+    .page:has(.sidebar-expanded)::after {
+        opacity: 1;
     }
 
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
+    .page:has(.sidebar-expanded) main {
+        transition: filter 0.2s ease;
     }
 
 @media (max-width: 640.98px) {
@@ -48,14 +73,25 @@ main {
 
 @media (min-width: 641px) {
     .page {
-        flex-direction: row;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    main {
+        margin-left: 3.75rem;
+        padding-left: 0;
+    }
+
+    /* Target the article specifically where @Body is rendered */
+    article.content {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
+        position: fixed;
+        height: 100%;
     }
 
     .top-row {
@@ -65,7 +101,6 @@ main {
     }
 
     .top-row.auth ::deep a:first-child {
-        flex: 1;
         text-align: right;
         width: 0;
     }
@@ -77,11 +112,9 @@ main {
 }
 
 #blazor-error-ui {
-    color-scheme: light only;
     background: lightyellow;
     bottom: 0;
     box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
     display: none;
     left: 0;
     padding: 0.6rem 1.25rem 0.7rem 1.25rem;
@@ -96,3 +129,34 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+/* Prevent the master horizontal scroll at the root */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* This targets the specific Bootstrap row bleed */
+.row {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+@media (hover: hover) {
+    .sidebar:hover {
+        width: 250px;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.3); /* perceived depth */
+    }
+
+    /* If page contains a sidebar that is hovered, dim the background */
+    .page:has(.sidebar:hover)::after {
+        opacity: 1;
+    }
+
+    /* When the sidebar is expanded, dim the main page */
+    .page:has(.sidebar:hover) main {
+        filter: blur(1.5px);
+        transition: filter 0.2s ease;
+    }
+}
