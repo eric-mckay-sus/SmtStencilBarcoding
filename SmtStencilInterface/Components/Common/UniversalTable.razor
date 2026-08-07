@@ -1,0 +1,207 @@
+@typeparam T
+@using System.Reflection
+@using System.ComponentModel.DataAnnotations.Schema
+
+@if(OnPageChange.HasDelegate){
+    @* PAGINATION TOP *@
+    <div class="pagination-container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="text-muted me-3">Showing @StartRecord to @EndRecord of @TotalCount</div>
+            @* Page Size Dropdown *@
+            <div class="d-flex align-items-center me-3">
+                <span class="form-label mb-0 me-1">Rows:</span>
+                <select class="form-select form-select-sm" style="width:auto"
+                        @onchange="async (e) => await OnPageSizeChange.InvokeAsync(int.TryParse(e.Value?.ToString(), out int i) ? i : 25)">
+                    <option value="10" selected="@(PageSize == 10)">10</option>
+                    <option value="25" selected="@(PageSize == 25)">25</option>
+                    <option value="50" selected="@(PageSize == 50)">50</option>
+                    <option value="100" selected="@(PageSize == 100)">100</option>
+                    <option value="500" selected="@(PageSize == 500)">500</option>
+                </select>
+            </div>
+            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" Outline="true" @onclick="ClearFilters">Clear Filters</Button>
+        </div>
+        <nav>
+            <ul class="pagination mt-3">
+                <div class="d-flex align-items-center me-3 ms-auto">
+                    <span class="text-muted me-2">Go to:</span>
+                    <div class="input-group input-group-sm" style="width: 75px;">
+                        <input type="number" class="form-control"
+                            min="1" max="@TotalPages"
+                            @bind="jumpPage"
+                            @onkeyup="@(e => e.Key == "Enter" ? HandleJumpPage() : Task.CompletedTask)"
+                            placeholder="@CurrentPage" />
+                        <button class="btn btn-outline-info btn-sm" @onclick="HandleJumpPage">Go</button>
+                    </div>
+                    <span class="text-muted ms-2">of @TotalPages</span>
+                </div>
+                <li class="page-item @(CurrentPage == 1 ? "disabled" : "") me-2">
+                    <button class="btn btn-outline-secondary" @onclick="() => OnPageChange.InvokeAsync(CurrentPage - 1)">&laquo; Previous</button>
+                </li>
+                <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                    <button class="btn btn-primary" @onclick="() => OnPageChange.InvokeAsync(CurrentPage + 1)">Next &raquo;</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+}
+
+@if (this.IsLoading)
+{
+    <div class="centered-container">
+        <Spinner Color="SpinnerColor.Primary" Style="width: 3rem; height: 3rem;" />
+    </div>
+
+}
+else if (Items != null)
+{
+    <div class="table-responsive-wrapper">
+        <table class="table res-table table-striped text-nowrap">
+            <thead>
+                <tr class="filter-row bg-light" style="border: none;">
+                    @foreach (var prop in GetVisibleProperties())
+                    {
+                        <td>
+                            @if (prop.Name == "Model" && BarcodeFilter != null)
+                            {
+                                <div class="centered-container">
+                                    <input class="form-control form-control-sm mt-1"
+                                        style="width: 10rem;"
+                                        id="model-filter"
+                                        placeholder="Filter model..."
+                                        value="@BarcodeFilter.Value"
+                                        autocomplete="off"
+                                        @onclick:stopPropagation
+                                        @oninput="e => _ = HandleFilterInput(BarcodeFilter, e.Value?.ToString())" />
+                                </div>
+                            }
+
+                            @if (prop.Name == "Line" && ModelFilter != null)
+                            {
+                                <div class="centered-container">
+                                    <input class="form-control form-control-sm mt-1"
+                                        style="width: 10rem;"
+                                        id="line-filter"
+                                        placeholder="Filter line..."
+                                        value="@ModelFilter.Value"
+                                        autocomplete="off"
+                                        @onclick:stopPropagation
+                                        @oninput="e => _ = HandleFilterInput(ModelFilter, e.Value?.ToString())" />
+                                </div>
+                            }
+                        </td>
+                    }
+                    @if (ShowActions)
+                    {
+                        <td />
+                    }
+                </tr>
+                <tr>
+                    @foreach (var prop in GetVisibleProperties())
+                    {
+                        @* Show internal column name (from SQL) but fall back to actual property name *@
+                        var attribute = prop.GetCustomAttribute<ColumnAttribute>();
+                        string displayName = attribute?.Name ?? prop.Name;
+                        <th @onclick="() => OnSort.InvokeAsync(prop.Name)"
+                            class="@(GetPropertyClass(prop))"
+                            style=@(OnSort.HasDelegate ? "cursor:pointer" : "cursor:auto")
+                            title=@(OnSort.HasDelegate ? $"Toggle sort for {displayName}" : "")>
+                                @displayName @SortIcon(prop.Name)
+                        </th>
+                    }
+                        @if (this.ShowActions){
+                        <th>Actions</th> @* For the expand, print, approve, deny, and remake buttons *@
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <Virtualize TItem="T" Items="@(Items?.ToList())" Context="item" OverscanCount="8" ItemSize="41">
+                    <tr @key="item"
+                        @onclick="() => ToggleAttentionItem(item)"
+                        class="@GetRowClass(item)">
+                        @foreach (var prop in GetVisibleProperties())
+                        {
+                            <td class="@GetPropertyClass(prop)">@(prop.GetValue(item)?.ToString() ?? "—")</td>
+                        }
+                        @if (this.ShowActions) {
+                            <td>
+                                @* Only show other buttons if they have a bindings and we're not in print select mode *@
+                                @if (!PrintModeEngaged){
+                                    @if(OnExpand.HasDelegate){
+                                        <button class="btn btn-link btn-action p-0 text-secondary me-2"
+                                                @onclick="async () => await HandleExpand(item)"
+                                                @onclick:stopPropagation
+                                                title="Expand">
+                                            @if (isExpanded) {
+                                                <Icon Name="IconName.ArrowsCollapseVertical" Size="IconSize.x4" />
+                                            }
+                                            else {
+                                                <Icon Name="IconName.ArrowsExpandVertical" Size="IconSize.x4" />
+                                            }
+                                        </button>
+                                    }
+                                    @if (OnApprove.HasDelegate){
+                                        <button class="btn btn-link btn-action p-0 me-2"
+                                                @onclick="() => OnApprove.InvokeAsync(item)"
+                                                @onclick:stopPropagation
+                                                title="Approve">
+                                            <Icon Name="IconName.CheckLg" Size="IconSize.x4" Color="IconColor.Success" />
+                                        </button>
+                                    }
+                                    @if (OnRemake.HasDelegate)
+                                    {
+                                        <button class="btn btn-link btn-action p-0 me-2"
+                                                @onclick="() => OnRemake.InvokeAsync(item)"
+                                                @onclick:stopPropagation
+                                                title="Request Remake">
+                                            <Icon Name="IconName.ArrowClockwise" Size="IconSize.x4" />
+                                        </button>
+                                    }
+                                    @if (OnDeny.HasDelegate){
+                                        <button class="btn btn-link btn-action p-0 me-2"
+                                                @onclick="() => OnDeny.InvokeAsync(item)"
+                                                @onclick:stopPropagation
+                                                title="Deny">
+                                            <Icon Name="IconName.XLg" Size="IconSize.x4" Color="IconColor.Danger" />
+                                        </button>
+                                    }
+                                }
+                                @* Only show the print button/checkbox if there's a print binding *@
+                                @if (OnPrint.HasDelegate){
+                                    @if (PrintModeEngaged)
+                                    {
+                                        <input type="checkbox"
+                                            class="form-check-input"
+                                            checked="@(SelectedForPrint?.Contains(item) ?? false)"
+                                            @onchange="e => HandleCheckboxChange(item, e.Value)" />
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-link btn-action p-0"
+                                                @onclick="() => OnPrint.InvokeAsync(item)"
+                                                @onclick:stopPropagation
+                                                title="Print this item">
+                                            <Icon Name="IconName.Printer" Size="IconSize.x4" />
+                                        </button>
+                                    }
+                                }
+                            </td>
+                        }
+                    </tr>
+                </Virtualize>
+            </tbody>
+        </table>
+        @if(Items == null || !Items.Any())
+        {
+            <div class="text-center p-5 border rounded bg-light">
+                <p class="text-muted mb-0">@EmptyMessage</p>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="text-center p-5 border rounded bg-light">
+        <p class="text-muted mb-0">@EmptyMessage</p>
+    </div>
+}

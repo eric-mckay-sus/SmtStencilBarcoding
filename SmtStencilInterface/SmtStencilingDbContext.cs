@@ -1,0 +1,284 @@
+// <copyright file="SmtStencilingDbContext.cs" company="Stanley Electric US Co. Inc.">
+// Copyright (c) 2026 Stanley Electric US Co. Inc. Licensed under the MIT License.
+// </copyright>
+
+namespace SmtStencilInterface;
+
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+
+/// <summary>
+/// Represents the state of the database in a way friendly to EF Core.
+/// </summary>
+/// <param name="options">The server details and login credentials.</param>
+public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> options) : DbContext(options)
+{
+    /// <summary>
+    /// Gets or sets the model-to-panel mapping table.
+    /// </summary>
+    public DbSet<ModelPanel> ModelToPanel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the status codes lookup table.
+    /// </summary>
+    public DbSet<StatusCode> StatusCodes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stencils table.
+    /// </summary>
+    public DbSet<Stencil> Stencils { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stencil status changes history table.
+    /// </summary>
+    public DbSet<StencilStatusChange> StencilStatusChanges { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stencil-to-model mapping table.
+    /// </summary>
+    public DbSet<StencilModel> StencilToModel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the associate information table.
+    /// </summary>
+    public DbSet<Associate> AssociateInfo { get; set; }
+}
+
+/// <summary>
+    /// Represents a model-to-panel mapping record in the database.
+    /// </summary>
+    [Table("ModelToPanel")]
+    [PrimaryKey(nameof(Id))]
+    public class ModelPanel
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier for this model-to-panel entry.
+        /// </summary>
+        [Column("id")]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model name for this mapping.
+        /// </summary>
+        [Column("modelName")]
+        public required string ModelName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the panel number for this mapping.
+        /// </summary>
+        [Column("panelNum")]
+        public required string PanelNum { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a status code record in the database.
+    /// </summary>
+    [Table("StatusCodes")]
+    [PrimaryKey(nameof(Code))]
+    public class StatusCode
+    {
+        /// <summary>
+        /// Gets or sets the status code.
+        /// </summary>
+        [Column("statusCode")]
+        public byte Code { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status description text.
+        /// </summary>
+        [Column("statusText")]
+        public required string Status { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a stencil record in the database.
+    /// </summary>
+    [Table("Stencils")]
+    [PrimaryKey(nameof(Barcode))]
+    public class Stencil
+    {
+        /// <summary>
+        /// Gets or sets the stencil barcode.
+        /// </summary>
+        [Column("barcode")]
+        public short Barcode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maker of the stencil.
+        /// </summary>
+        [Column("maker")]
+        public required string Maker { get; set; }
+
+        /// <summary>
+        /// Gets or sets the job number for the stencil.
+        /// </summary>
+        [Column("jobNum")]
+        public required string JobNum { get; set; }
+
+        /// <summary>
+        /// Gets or sets the receive date for the stencil.
+        /// </summary>
+        [Column("receiveDate")]
+        public DateOnly ReceiveDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cycle count for the stencil.
+        /// </summary>
+        [Column("cycleCount")]
+        public int CycleCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expiration date for the stencil.
+        /// </summary>
+        [Column("expirationDate")]
+        public DateOnly ExpirationDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thickness of the stencil.
+        /// </summary>
+        [Column("thickness")]
+        public byte Thickness { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status code of the stencil.
+        /// </summary>
+        [Column("statusCode")]
+        public byte StatusCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location of the stencil.
+        /// </summary>
+        [Column("location")]
+        public required string Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binary checkplot data for the stencil.
+        /// </summary>
+        [Column("checkplot")]
+        public byte[]? Checkplot { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional note for the stencil.
+        /// </summary>
+        [Column("note")]
+        public string? Note { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a stencil status change log record in the database.
+    /// </summary>
+    [Table("StencilStatusChanges")]
+    [Keyless]
+    public class StencilStatusChange
+    {
+        /// <summary>
+        /// Gets or sets the stencil barcode.
+        /// </summary>
+        [Column("barcode")]
+        public short Barcode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state the stencil changed from.
+        /// </summary>
+        [Column("fromState")]
+        public byte FromState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state the stencil changed to.
+        /// </summary>
+        [Column("toState")]
+        public byte ToState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the associate ID who performed the status change.
+        /// </summary>
+        [Column("associateId")]
+        public required string AssociateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp when the status change occurred.
+        /// </summary>
+        [Column("changeTime")]
+        public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional note for the status change.
+        /// </summary>
+        [Column("note")]
+        public string? Note { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a stencil-to-model mapping record in the database.
+    /// </summary>
+    [Table("StencilToModel")]
+    [PrimaryKey(nameof(StencilId))]
+    public class StencilModel
+    {
+        /// <summary>
+        /// Gets or sets the stencil ID.
+        /// </summary>
+        [Column("stencilId")]
+        public short StencilId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model ID.
+        /// </summary>
+        [Column("modelId")]
+        public int ModelId { get; set; }
+    }
+
+    /// <summary>
+    /// Represents an associate record in the database.
+    /// </summary>
+    [PrimaryKey(nameof(BadgeNum))]
+    public class Associate
+    {
+        /// <summary>
+        /// Gets or sets the associate badge number.
+        /// </summary>
+        [Column("badgeNum")]
+        public int BadgeNum { get; set; }
+
+        /// <summary>
+        /// Gets or sets the associate number.
+        /// </summary>
+        [Column("associateNum")]
+        public int AssociateNum { get; set; }
+
+        /// <summary>
+        /// Gets or sets the associate's name.
+        /// </summary>
+        [Column("associateName")]
+        public string? Name { get; set; }
+
+        /// <summary>
+        /// Associates are equal if they share the same badge number.
+        /// </summary>
+        /// <param name="obj">The object to compare.</param>
+        /// <returns>True when the objects represent the same associate.</returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj is Associate other)
+            {
+                return this.BadgeNum == other.BadgeNum;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the hash code for this associate.
+        /// </summary>
+        /// <returns>The associate's hash code.</returns>
+        public override int GetHashCode() => this.BadgeNum.GetHashCode();
+
+        /// <summary>
+        /// Returns a descriptive string representation of this associate.
+        /// </summary>
+        /// <returns>The associate description.</returns>
+        public override string ToString()
+        {
+            return $"Name: {this.Name}, Assoc #: {this.AssociateNum}, Badge #: {this.BadgeNum}";
+        }
+    }
