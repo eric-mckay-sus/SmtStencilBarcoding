@@ -1,4 +1,5 @@
 ﻿@page "/stencil-history"
+@inherits TableManager<StencilStatusChange>
 
 <PageTitle>Stencil History</PageTitle>
 
@@ -7,3 +8,6 @@
 <h1>Date, model, barcode, and panel number filters</h1>
 
 <h1>Save to CSV option</h1>
+
+<TablePresenter T="StencilStatusChange"
+                Base="this" />

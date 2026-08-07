@@ -55,6 +55,7 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
         /// Gets or sets the unique identifier for this model-to-panel entry.
         /// </summary>
         [Column("id")]
+        [Verbose]
         public int Id { get; set; }
 
         /// <summary>
