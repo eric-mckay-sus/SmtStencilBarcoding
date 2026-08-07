@@ -2,8 +2,8 @@
 // Copyright (c) 2026 Stanley Electric US Co. Inc. Licensed under the MIT License.
 // </copyright>
 
-namespace SmtStencilBarcoding;
-using SmtStencilBarcoding.Components;
+namespace SmtStencilInterface;
+using SmtStencilInterface.Components;
 
 /// <summary>
 /// Hosts the application startup and configuration.
