@@ -1,10 +1,11 @@
 ﻿@page "/create-model"
-@inherits TableManager<ModelPanel>
+@inherits TableManager<ModelPanel, ModelPanel>
 
 <PageTitle>Model Creation</PageTitle>
 
 <h1>Field for model name that auto-populates</h1>
 <h1>Field for panel number</h1>
 
-<TablePresenter T="ModelPanel"
+<TablePresenter TWrite="ModelPanel"
+                TRead="ModelPanel"
                 Base="this" />

@@ -1,5 +1,5 @@
 ﻿@page "/stencil-history"
-@inherits TableManager<StencilStatusChange>
+@inherits TableManager<StencilStatusChange, EnhancedStencilStatusChange>
 
 <PageTitle>Stencil History</PageTitle>
 
@@ -9,5 +9,6 @@
 
 <h1>Save to CSV option</h1>
 
-<TablePresenter T="StencilStatusChange"
+<TablePresenter TWrite="StencilStatusChange"
+                TRead="EnhancedStencilStatusChange"
                 Base="this" />

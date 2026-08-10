@@ -1,4 +1,5 @@
-@typeparam T where T : class
+@typeparam TWrite where TWrite : class, new()
+@typeparam TRead where TRead : class, new()
 
 <UniversalTable
     Items="Base.DataView"
@@ -17,9 +18,6 @@
     GetSortIcon="Base.GetSortIcon"
     OnPageSizeChange="Base.AlterPageSize"
     OnPrint="OnPrint"
-    PrintModeEngaged="PrintModeEngaged"
-    SelectedForPrint="SelectedForPrint"
-    SelectedForPrintChanged="SelectedForPrintChanged"
     OnExpand="OnExpand"
     OnApprove="OnApprove"
     OnDeny="OnDeny"
@@ -29,16 +27,14 @@
 
 @code{
     [Parameter, EditorRequired]
-    public TableManager<T> Base { get; set; } = default!;
+    public TableManager<TWrite, TRead> Base { get; set; } = default!;
 
     [Parameter] public bool PrintModeEngaged { get; set; }
-    [Parameter] public List<T?> SelectedForPrint { get; set; } = [];
-    [Parameter] public EventCallback<List<T>> SelectedForPrintChanged { get; set; }
-    [Parameter] public EventCallback<T> OnPrint { get; set; }
-    [Parameter] public EventCallback<T> OnExpand { get; set; }
-    [Parameter] public EventCallback<T> OnApprove { get; set; }
-    [Parameter] public EventCallback<T> OnDeny { get; set; }
-    [Parameter] public EventCallback<T> OnRemake { get; set; }
-    [Parameter] public T? Target { get; set; }
+    [Parameter] public EventCallback<TRead> OnPrint { get; set; }
+    [Parameter] public EventCallback<TRead> OnExpand { get; set; }
+    [Parameter] public EventCallback<TRead> OnApprove { get; set; }
+    [Parameter] public EventCallback<TRead> OnDeny { get; set; }
+    [Parameter] public EventCallback<TRead> OnRemake { get; set; }
+    [Parameter] public TRead? Target { get; set; }
     [Parameter] public string? TargetStyle { get; set; }
 }

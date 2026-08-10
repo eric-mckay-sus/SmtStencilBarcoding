@@ -1,5 +1,5 @@
 ﻿@page "/edit-stencil"
-@inherits TableManager<Stencil>
+@inherits TableManager<Stencil, EnhancedStencil>
 
 <PageTitle>Stencil Editing</PageTitle>
 
@@ -7,5 +7,6 @@
 
 <h1>Space for checkplot upload</h1>
 
-<TablePresenter T="Stencil"
+<TablePresenter TWrite="Stencil"
+                TRead="EnhancedStencil"
                 Base="this" />

@@ -130,24 +130,6 @@ public partial class UniversalTable<T>
     [Parameter]
     public EventCallback<T> OnPrint { get; set; }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether print mode is engaged.
-    /// </summary>
-    [Parameter]
-    public bool PrintModeEngaged { get; set; } = false;
-
-    /// <summary>
-    /// Gets or sets the list of <typeparamref name="T"/> objects which are selected to be printed.
-    /// </summary>
-    [Parameter]
-    public List<T> SelectedForPrint { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the action to call when <see cref="SelectedForPrint"/> changes.
-    /// </summary>
-    [Parameter]
-    public EventCallback<List<T>> SelectedForPrintChanged { get; set; }
-
     // Approval
 
     /// <summary>
@@ -316,36 +298,6 @@ public partial class UniversalTable<T>
     /// <param name="col">The column for which to get the sort icon.</param>
     /// <returns>The string to show denoting the sort order and priority.</returns>
     private string SortIcon(string col) => this.GetSortIcon?.Invoke(col) ?? string.Empty;
-
-    /// <summary>
-    /// To be called when a checkbox state changes.
-    /// </summary>
-    /// <param name="item">The item to be updated.</param>
-    /// <param name="checkedValue">The new value for the checkbox.</param>
-    /// <returns>A Task representing that <see cref="SelectedForPrint"/> has been synchronized.</returns>
-    private async Task HandleCheckboxChange(T item, object? checkedValue)
-    {
-        bool isChecked = (bool)(checkedValue ?? false);
-
-        List<T> updatedList = [.. this.SelectedForPrint ?? []]; // create a new object and manipulate that
-
-        if (isChecked)
-        {
-            if (!updatedList.Contains(item))
-            {
-                updatedList.Add(item);
-            }
-        }
-        else
-        {
-            updatedList.Remove(item);
-        }
-
-        this.SelectedForPrint = updatedList; // then assign it to the bound parameter to force Blazor to re-render
-
-        // SelectedForPrint gets updated with updatedList as a parameter
-        await this.SelectedForPrintChanged.InvokeAsync(updatedList);
-    }
 
     /// <summary>
     /// For binding to the "jump to page" button.

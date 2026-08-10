@@ -1,5 +1,5 @@
 ﻿@page "/update-stencil-state"
-@inherits TableManager<StencilStatusChange>
+@inherits TableManager<StencilStatusChange, EnhancedStencilStatusChange>
 
 <PageTitle>Update Stencils</PageTitle>
 
@@ -7,5 +7,6 @@
 
 <h1>Edit option opens state change form</h1>
 
-<TablePresenter T="StencilStatusChange"
+<TablePresenter TWrite="StencilStatusChange"
+                TRead="EnhancedStencilStatusChange"
                 Base="this" />

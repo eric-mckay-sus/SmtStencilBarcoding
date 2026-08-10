@@ -7,7 +7,7 @@ namespace SmtStencilInterface.Components.Pages;
 /// <summary>
 /// Code-behind for the model creation page.
 /// </summary>
-public partial class StencilHistory : TableManager<StencilStatusChange>
+public partial class StencilHistory : TableManager<StencilStatusChange, EnhancedStencilStatusChange>
 {
     /// <summary>
     /// When this page loads, set the default load.
@@ -15,7 +15,7 @@ public partial class StencilHistory : TableManager<StencilStatusChange>
     /// <returns>A Task representing that the page has loaded.</returns>
     protected override async Task OnInitializedAsync()
     {
-        this.SortList.Add(new ("Barcode", SortDir.Asc));
+        this.SortList.Add(new ("Timestamp", SortDir.Desc));
         await base.OnInitializedAsync();
     }
 }

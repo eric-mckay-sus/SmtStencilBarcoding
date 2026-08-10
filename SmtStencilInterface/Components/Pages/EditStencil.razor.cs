@@ -7,7 +7,7 @@ namespace SmtStencilInterface.Components.Pages;
 /// <summary>
 /// Code-behind for the stencil editing page.
 /// </summary>
-public partial class EditStencil : TableManager<Stencil>
+public partial class EditStencil : TableManager<Stencil, EnhancedStencil>
 {
     /// <summary>
     /// When this page loads, set the default load.

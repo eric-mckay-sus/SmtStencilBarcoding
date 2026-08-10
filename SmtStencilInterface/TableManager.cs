@@ -12,7 +12,7 @@ using System.Linq.Dynamic.Core;
 using InterProcessIO;
 
 /// <summary>
-/// Non-generic parent of <see cref="TableManager{T}"/> to contain static information.
+/// Non-generic parent of <see cref="TableManagerBase{TRead, TWrite}"/> to contain static information.
 /// </summary>
 public class TableManagerBase : ComponentBase
 {
@@ -31,9 +31,11 @@ public class TableManagerBase : ComponentBase
 /// Minimal table logic for loading and paging data from <see cref="SmtStencilingDbContext"/>.
 /// Designed to provide the data needed by <see cref="Components.Common.UniversalTable{T}"/> for display.
 /// </summary>
-/// <typeparam name="T">The EF entity type to load.</typeparam>
-public class TableManager<T> : TableManagerBase
-    where T : class
+/// <typeparam name="TWrite">The datatype to insert (row from SQL table).</typeparam>
+/// <typeparam name="TRead">The datatype to show (row from SQL view, or table again if no view).</typeparam>
+public class TableManager<TWrite, TRead> : TableManagerBase
+    where TWrite : class, new()
+    where TRead : class, new()
 {
     /// <summary>
     /// Gets or sets this upload page's input provider.
@@ -50,7 +52,7 @@ public class TableManager<T> : TableManagerBase
     /// <summary>
     /// Gets the data from the DB table with rows of type <typeparamref name="T" /> (there should only be one).
     /// </summary>
-    public List<T> DataView { get; private set; } = [];
+    public List<TRead> DataView { get; private set; } = [];
 
     /// <summary>
     /// Gets a value indicating whether the table is loading.
@@ -93,15 +95,24 @@ public class TableManager<T> : TableManagerBase
     public Filter<string> ModelFilter { get; set; } = new Filter<string>("ModelName", string.Empty);
 
     /// <summary>
+    /// Gets or sets the error message for uniqueness constraint, if applicable.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Gets the list of sorts to be applied to the query.
     /// </summary>
     protected List<Sort> SortList { get; } = [];
 
     /// <summary>
-    /// Gets or sets the navigation manager used to jump between pages.
+    /// Gets or sets a value indicating whether the insertion/update form is open.
     /// </summary>
-    [Inject]
-    private protected NavigationManager Navigation { get; set; } = default!;
+    private protected bool IsFormVisible { get; set; } = false; // Whether to show or hide the add form
+
+    /// <summary>
+    /// Gets or sets the item to be added (from the add/update form).
+    /// </summary>
+    private protected TWrite NewItem { get; set; } = new ();
 
     /// <summary>
     /// Gets or sets the thread-safe DB context generator.
@@ -133,7 +144,7 @@ public class TableManager<T> : TableManagerBase
         try
         {
             using SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync();
-            IQueryable<T> query = context.Set<T>().AsNoTracking();
+            IQueryable<TRead> query = context.Set<TRead>().AsNoTracking();
 
             query = this.ApplyFilters(query);
             query = this.ApplySorting(query);
@@ -141,7 +152,7 @@ public class TableManager<T> : TableManagerBase
             this.DataView = await query
                 .Skip((this.CurrentPage - 1) * this.PageSize)
                 .Take(this.PageSize)
-                .ToDynamicListAsync<T>();
+                .ToDynamicListAsync<TRead>();
         }
         finally
         {
@@ -290,14 +301,65 @@ public class TableManager<T> : TableManagerBase
     /// </summary>
     /// <param name="query">The query to which filters should be appended.</param>
     /// <returns>An IQueryable object with filters applied.</returns>
-    protected virtual IQueryable<T> ApplyFilters(IQueryable<T> query) => query;
+    protected virtual IQueryable<TRead> ApplyFilters(IQueryable<TRead> query) => query;
+
+    /// <summary>
+    /// Throw flag to display add form, view handles the actual displaying.
+    /// </summary>
+    protected void ShowForm() => this.IsFormVisible = true;
+
+    /// <summary>
+    /// Remove add form flag, clear input and error message.
+    /// </summary>
+    protected virtual void CloseForm()
+    {
+        this.IsFormVisible = false;
+        this.NewItem = new TWrite();
+        this.ErrorMessage = null;
+    }
+
+    /// <summary>
+    /// On submit, attempt to insert into table, and catch potential constraint violations.
+    /// </summary>
+    /// <returns>A Task representing that <see cref="NewItem"/> has been successfully inserted/updated.</returns>
+    protected virtual async Task HandleValidSubmit()
+    {
+        this.ErrorMessage = null;
+        try
+        {
+            using SmtStencilingDbContext context = this.DbFactory.CreateDbContext();
+            context.Set<TWrite>().Add(this.NewItem);
+            await context.SaveChangesAsync();
+
+            this.ShowSuccessToast();
+            this.NewItem = new ();
+            await this.RefreshData();
+            this.CloseForm();
+        }
+        catch (DbUpdateException)
+        {
+            // Fallback for race conditions (form validation handled elsewhere)
+            this.ErrorMessage = "A database error occurred. The data may have changed since you opened the form.";
+        }
+        catch (Exception)
+        {
+            this.ErrorMessage = "An unexpected error occurred. Please try again.";
+        }
+    }
+
+    /// <summary>
+    /// Hook for children to display toast before NewItem is cleared.
+    /// </summary>
+    protected virtual void ShowSuccessToast()
+    {
+    }
 
     /// <summary>
     /// Uses dynamic LINQ to draft a SQL ORDER BY based on the current sort.
     /// </summary>
     /// <param name="query">The query to which the sorts should be appended.</param>
     /// <returns>An IQueryable object with sorts applied.</returns>
-    protected IQueryable<T> ApplySorting(IQueryable<T> query)
+    protected IQueryable<TRead> ApplySorting(IQueryable<TRead> query)
     {
         // If there is no sort, simply order by itself (PK for DB objects)
         if (this.SortList.Count == 0)
@@ -326,7 +388,7 @@ public class TableManager<T> : TableManagerBase
             }
             else
             {
-                query = ((IOrderedQueryable<T>)query).ThenBy(sortExpression);
+                query = ((IOrderedQueryable<TRead>)query).ThenBy(sortExpression);
             }
         }
 

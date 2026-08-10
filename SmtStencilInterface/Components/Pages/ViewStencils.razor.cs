@@ -7,7 +7,7 @@ namespace SmtStencilInterface.Components.Pages;
 /// <summary>
 /// Code-behind for the model creation page.
 /// </summary>
-public partial class ViewStencils : TableManager<Stencil>
+public partial class ViewStencils : TableManager<Stencil, EnhancedStencil>
 {
     /// <summary>
     /// When this page loads, set the default load.

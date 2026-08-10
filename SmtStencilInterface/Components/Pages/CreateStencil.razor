@@ -1,5 +1,5 @@
 ﻿@page "/create-stencil"
-@inherits TableManager<Stencil>
+@inherits TableManager<Stencil, EnhancedStencil>
 
 <PageTitle>Stencil Creation</PageTitle>
 
@@ -8,6 +8,7 @@
 <h1>Stencil table as courtesy</h1>
 <h1>Replace with query to find all stencils under entered model after model field is populated</h1>
 
-<TablePresenter T="Stencil"
+<TablePresenter TWrite="Stencil"
+                TRead="EnhancedStencil"
                 Base="this" />
 

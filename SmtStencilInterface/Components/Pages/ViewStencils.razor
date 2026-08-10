@@ -1,5 +1,5 @@
 ﻿@page "/"
-@inherits TableManager<Stencil>
+@inherits TableManager<Stencil, EnhancedStencil>
 
 <PageTitle>Stencil Browsing</PageTitle>
 
@@ -8,5 +8,6 @@
 
 <h1>Checkplot download option for each stencil</h1>
 
-<TablePresenter T="Stencil"
+<TablePresenter TWrite="Stencil"
+                TRead="EnhancedStencil"
                 Base="this" />

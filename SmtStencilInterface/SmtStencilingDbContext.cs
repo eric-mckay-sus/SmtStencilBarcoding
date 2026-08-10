@@ -19,14 +19,14 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
     public DbSet<ModelPanel> ModelToPanel { get; set; }
 
     /// <summary>
-    /// Gets or sets the status codes lookup table.
-    /// </summary>
-    public DbSet<StatusCode> StatusCodes { get; set; }
-
-    /// <summary>
     /// Gets or sets the stencils table.
     /// </summary>
     public DbSet<Stencil> Stencils { get; set; }
+
+    /// <summary>
+    /// Gets or sets the read-only view that connects stencils to their model and status text.
+    /// </summary>
+    public DbSet<EnhancedStencil> EnhancedStencilView { get; set; }
 
     /// <summary>
     /// Gets or sets the stencil status changes history table.
@@ -34,9 +34,9 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
     public DbSet<StencilStatusChange> StencilStatusChanges { get; set; }
 
     /// <summary>
-    /// Gets or sets the stencil-to-model mapping table.
+    /// Gets or sets the read-only view that connects stencils to their model and status text.
     /// </summary>
-    public DbSet<StencilModel> StencilToModel { get; set; }
+    public DbSet<EnhancedStencilStatusChange> EnhancedStencilStatusChanges { get; set; }
 
     /// <summary>
     /// Gets or sets the associate information table.
@@ -62,33 +62,13 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
         /// Gets or sets the model name for this mapping.
         /// </summary>
         [Column("modelName")]
-        public required string ModelName { get; set; }
+        public string? Model { get; set; }
 
         /// <summary>
         /// Gets or sets the panel number for this mapping.
         /// </summary>
         [Column("panelNum")]
-        public required string PanelNum { get; set; }
-    }
-
-    /// <summary>
-    /// Represents a status code record in the database.
-    /// </summary>
-    [Table("StatusCodes")]
-    [PrimaryKey(nameof(Code))]
-    public class StatusCode
-    {
-        /// <summary>
-        /// Gets or sets the status code.
-        /// </summary>
-        [Column("statusCode")]
-        public byte Code { get; set; }
-
-        /// <summary>
-        /// Gets or sets the status description text.
-        /// </summary>
-        [Column("statusText")]
-        public required string Status { get; set; }
+        public string? PanelNum { get; set; }
     }
 
     /// <summary>
@@ -108,13 +88,13 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
         /// Gets or sets the maker of the stencil.
         /// </summary>
         [Column("maker")]
-        public required string Maker { get; set; }
+        public string? Maker { get; set; }
 
         /// <summary>
         /// Gets or sets the job number for the stencil.
         /// </summary>
         [Column("jobNum")]
-        public required string JobNum { get; set; }
+        public string? JobNum { get; set; }
 
         /// <summary>
         /// Gets or sets the receive date for the stencil.
@@ -150,17 +130,108 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
         /// Gets or sets the location of the stencil.
         /// </summary>
         [Column("location")]
-        public required string Location { get; set; }
+        public string? Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ID of the model to which this stencil belongs.
+        /// </summary>
+        [NotDisplayed]
+        [Column("modelId")]
+        public int ModelId { get; set; }
 
         /// <summary>
         /// Gets or sets the binary checkplot data for the stencil.
         /// </summary>
+        [Verbose]
         [Column("checkplot")]
         public byte[]? Checkplot { get; set; }
 
         /// <summary>
         /// Gets or sets an optional note for the stencil.
         /// </summary>
+        [Verbose]
+        [Column("note")]
+        public string? Note { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a stencil record in the view that provides model name and in the database.
+    /// </summary>
+    [Table("EnhancedStencilView")]
+    [PrimaryKey(nameof(Barcode))]
+    public class EnhancedStencil
+    {
+        /// <summary>
+        /// Gets or sets the name of the model to which this stencil belongs.
+        /// </summary>
+        [Column("modelName")]
+        public string? Model { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stencil barcode.
+        /// </summary>
+        [Column("barcode")]
+        public string? Barcode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maker of the stencil.
+        /// </summary>
+        [Column("maker")]
+        public string? Maker { get; set; }
+
+        /// <summary>
+        /// Gets or sets the job number for the stencil.
+        /// </summary>
+        [Column("jobNum")]
+        public string? JobNum { get; set; }
+
+        /// <summary>
+        /// Gets or sets the receive date for the stencil.
+        /// </summary>
+        [Column("receiveDate")]
+        public DateOnly ReceiveDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cycle count for the stencil.
+        /// </summary>
+        [Column("cycleCount")]
+        public int CycleCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expiration date for the stencil.
+        /// </summary>
+        [Column("expirationDate")]
+        public DateOnly ExpirationDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thickness of the stencil.
+        /// </summary>
+        [Column("thickness")]
+        public byte Thickness { get; set; }
+
+        /// <summary>
+        /// Gets or sets the status of the stencil.
+        /// </summary>
+        [Column("statusText")]
+        public string? StatusText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location of the stencil.
+        /// </summary>
+        [Column("location")]
+        public string? Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the binary checkplot data for the stencil.
+        /// </summary>
+        [Verbose]
+        [Column("checkplot")]
+        public byte[]? Checkplot { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional note for the stencil.
+        /// </summary>
+        [Verbose]
         [Column("note")]
         public string? Note { get; set; }
     }
@@ -194,7 +265,7 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
         /// Gets or sets the associate ID who performed the status change.
         /// </summary>
         [Column("associateId")]
-        public required string AssociateId { get; set; }
+        public string? AssociateId { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp when the status change occurred.
@@ -205,28 +276,54 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
         /// <summary>
         /// Gets or sets an optional note for the status change.
         /// </summary>
+        [Verbose]
         [Column("note")]
         public string? Note { get; set; }
     }
 
     /// <summary>
-    /// Represents a stencil-to-model mapping record in the database.
+    /// Represents a stencil status change log record in the database.
     /// </summary>
-    [Table("StencilToModel")]
-    [PrimaryKey(nameof(StencilId))]
-    public class StencilModel
+    [Table("EnhancedStencilStatusChanges")]
+    [Keyless]
+    public class EnhancedStencilStatusChange
     {
         /// <summary>
-        /// Gets or sets the stencil ID.
+        /// Gets or sets the stencil barcode.
         /// </summary>
-        [Column("stencilId")]
-        public short StencilId { get; set; }
+        [Column("barcode")]
+        public string? Barcode { get; set; }
 
         /// <summary>
-        /// Gets or sets the model ID.
+        /// Gets or sets the state the stencil changed from.
         /// </summary>
-        [Column("modelId")]
-        public int ModelId { get; set; }
+        [Column("fromStatusText")]
+        public string? FromState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state the stencil changed to.
+        /// </summary>
+        [Column("toStatusText")]
+        public string? ToState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the associate ID who performed the status change.
+        /// </summary>
+        [Column("associateId")]
+        public string? AssociateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timestamp when the status change occurred.
+        /// </summary>
+        [Column("changeTime")]
+        public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets an optional note for the status change.
+        /// </summary>
+        [Verbose]
+        [Column("note")]
+        public string? Note { get; set; }
     }
 
     /// <summary>

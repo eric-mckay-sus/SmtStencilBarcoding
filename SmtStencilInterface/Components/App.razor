@@ -19,6 +19,28 @@
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
     <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     <script src="_framework/blazor.web.js"></script>
+
+    @* Script to focus a target element by ID *@
+    <script>
+        window.focusElement = (elementId) => {
+            const el = document.getElementById(elementId);
+            if (el) {
+                // A tiny timeout helps if Blazor is still finishing the render
+                setTimeout(() => {
+                    el.focus();
+                    // If it's a datalist-linked input, trigger the dropdown
+                    if (el.getAttribute('list')) {
+                        // Dispatching an 'input' event forces the browser to re-evaluate and show the datalist.
+                        const event = new Event('input', { bubbles: true });
+                        el.dispatchEvent(event);
+
+                        // For Chromium, sometimes a click helps
+                        el.click();
+                    }
+                }, 20);
+            }
+        };
+    </script>
 </body>
 
 </html>
