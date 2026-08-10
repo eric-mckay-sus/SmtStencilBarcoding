@@ -12,7 +12,7 @@ using System.Linq.Dynamic.Core;
 using InterProcessIO;
 
 /// <summary>
-/// Non-generic parent of <see cref="TableManagerBase{TRead, TWrite}"/> to contain static information.
+/// Non-generic parent of <see cref="TableManager{TWrite, TRead}"/> to contain static information.
 /// </summary>
 public class TableManagerBase : ComponentBase
 {
@@ -50,7 +50,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     public BlazorReporter Reporter { get; set; } = default!;
 
     /// <summary>
-    /// Gets the data from the DB table with rows of type <typeparamref name="T" /> (there should only be one).
+    /// Gets the data from the DB table with rows of type <typeparamref name="TRead" /> (there should only be one).
     /// </summary>
     public List<TRead> DataView { get; private set; } = [];
 
@@ -92,7 +92,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// <summary>
     /// Gets or sets the optional model name filter.
     /// </summary>
-    public Filter<string> ModelFilter { get; set; } = new Filter<string>("ModelName", string.Empty);
+    public Filter<string> ModelFilter { get; set; } = new Filter<string>("Model", string.Empty);
 
     /// <summary>
     /// Gets or sets the error message for uniqueness constraint, if applicable.
@@ -297,7 +297,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
 
     /// <summary>
     /// Hook for children to apply filtering logic.
-    /// Recommend applying model/line filters stored here using specific information about <typeparamref name="T"/>.
+    /// Recommend applying model/line filters stored here using specific information about <typeparamref name="TRead"/>.
     /// </summary>
     /// <param name="query">The query to which filters should be appended.</param>
     /// <returns>An IQueryable object with filters applied.</returns>

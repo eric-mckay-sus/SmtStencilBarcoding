@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>
-/// Defines the methods and state necessary to display the contents of <see cref="TableManager{T}"/>.
+/// Defines the methods and state necessary to display the contents of <see cref="TableManager{TWrite, TRead}"/>.
 /// </summary>
 /// <typeparam name="T">The class defining one record in the table.</typeparam>
 public partial class UniversalTable<T>

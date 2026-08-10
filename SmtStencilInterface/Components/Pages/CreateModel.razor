@@ -3,8 +3,58 @@
 
 <PageTitle>Model Creation</PageTitle>
 
-<h1>Field for model name that auto-populates</h1>
-<h1>Field for panel number</h1>
+<h2>Add a Model/Panel pair</h2>
+
+<div class="expandable-container">
+    <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
+        <div class="expandable-content">
+            <div class="form-card mb-3">
+                <EditForm Model="@NewItem" OnValidSubmit="@HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="form-container">
+                        <h5 class="form-title">Model Details</h5>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label for="name" class="form-label">Model Name:</label>
+                                <InputText list="models" id="name" @bind-Value="NewItem.Model" class="form-control" autocomplete="off" />
+                                <datalist id="models">
+                                    @foreach (string m in availableModels)
+                                    {
+                                        <option value="@m">@m</option>
+                                    }
+                                </datalist>
+                                <ValidationMessage For="@(() => NewItem.Model)" />
+                            </div>
+                            <div class="col-3">
+                                <label for="panelNum" class="form-label">Panel Number:</label>
+                                <InputText id="panelNum" @bind-Value="NewItem.PanelNum" class="form-control" autocomplete="off" />
+                                <ValidationMessage For="@(() => NewItem.PanelNum)" />
+                            </div>
+                        </div>
+
+                        <div class="form-actions d-flex justify-content-center gap-4">
+                            <button type="button" class="btn btn-outline-secondary btn-lg me-2" @onclick="CloseForm">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-plus-lg"></i> Save Associate
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+                <ErrorDisplay ErrorMessage="@ErrorMessage" />
+            </div>
+        </div>
+    </div>
+
+    <div class="expandable-wrapper @(!IsFormVisible ? "is-expanded" : "")">
+        <div class="expandable-content">
+            <div class="d-flex justify-content-center mb-3">
+                <button class="btn btn-success" @onclick="ShowForm">
+                    <i class="bi bi-plus-lg"></i> Add New Model
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <TablePresenter TWrite="ModelPanel"
                 TRead="ModelPanel"
