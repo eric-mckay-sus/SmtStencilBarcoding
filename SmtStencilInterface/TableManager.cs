@@ -314,7 +314,6 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     protected virtual void CloseForm()
     {
         this.IsFormVisible = false;
-        this.NewItem = new TWrite();
         this.ErrorMessage = null;
     }
 
@@ -331,9 +330,8 @@ public class TableManager<TWrite, TRead> : TableManagerBase
             context.Set<TWrite>().Add(this.NewItem);
             await context.SaveChangesAsync();
 
-            this.ShowSuccessToast();
-            this.NewItem = new ();
             await this.RefreshData();
+            this.ShowSuccessToast();
             this.CloseForm();
         }
         catch (DbUpdateException)
@@ -352,6 +350,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// </summary>
     protected virtual void ShowSuccessToast()
     {
+        this.NewItem = new ();
     }
 
     /// <summary>

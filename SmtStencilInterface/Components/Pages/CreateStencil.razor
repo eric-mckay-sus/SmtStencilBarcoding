@@ -28,7 +28,8 @@
                                 <label class="form-label">Date Received</label>
                                 <input type="date"
                                     class="form-control"
-                                    @bind="NewItem.ReceiveDate" />
+                                    @bind="NewItem.ReceiveDate"
+                                    max="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
                                 <ValidationMessage For="@(() => NewItem.ReceiveDate)" />
                             </div>
                             <div class="col-2">
@@ -113,5 +114,6 @@
 <TablePresenter TWrite="Stencil"
                 TRead="EnhancedStencil"
                 Base="this"
+                Target="target"
                 OnExpand="() => {}" />
 

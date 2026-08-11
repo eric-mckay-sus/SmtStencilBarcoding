@@ -5,6 +5,7 @@
 namespace SmtStencilInterface;
 
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
@@ -72,12 +73,16 @@ public class ModelPanel
     /// Gets or sets the model name for this mapping.
     /// </summary>
     [Column("modelName")]
+    [Required(ErrorMessage = "Model name is required")]
+    [MaxLength(25, ErrorMessage = "Model name must be no more than 25 characters.")]
     public string? Model { get; set; }
 
     /// <summary>
     /// Gets or sets the panel number for this mapping.
     /// </summary>
     [Column("panelNum")]
+    [Required(ErrorMessage = "Panel number is required")]
+    [MaxLength(25, ErrorMessage = "Panel number must be no more than 25 characters.")]
     public string? PanelNum { get; set; }
 }
 
@@ -124,6 +129,107 @@ public class Stencil
     /// Gets or sets the maker of the stencil.
     /// </summary>
     [Column("maker")]
+    [Required(ErrorMessage = "Stencil maker is required.")]
+    [MaxLength(25, ErrorMessage = "Stencil maker must be no more than 25 characters.")]
+    public string? Maker { get; set; }
+
+    /// <summary>
+    /// Gets or sets the job number for the stencil.
+    /// </summary>
+    [Column("jobNum")]
+    [Required(ErrorMessage = "Job number is required.")]
+    [MaxLength(20, ErrorMessage = "Panel number must be no more than 20 characters.")]
+    public string? JobNum { get; set; }
+
+    /// <summary>
+    /// Gets or sets the receive date for the stencil.
+    /// </summary>
+    [Column("receiveDate")]
+    [Required(ErrorMessage = "Stencil receive date is required.")]
+    public DateOnly? ReceiveDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cycle count for the stencil.
+    /// </summary>
+    [Column("cycleCount")]
+    [Required(ErrorMessage = "Cycle count is required.")]
+    public int? CycleCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the expiration date for the stencil.
+    /// </summary>
+    [Column("expirationDate")]
+    [Required(ErrorMessage = "Expiration date is required.")]
+    public DateOnly? ExpirationDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the thickness of the stencil.
+    /// </summary>
+    [Column("thickness")]
+    [Required(ErrorMessage = "Stencil thickness is required.")]
+    public byte? Thickness { get; set; }
+
+    /// <summary>
+    /// Gets or sets the status code of the stencil.
+    /// </summary>
+    [Column("statusCode")]
+    [Required(ErrorMessage = "Stencil status is required.")]
+    public byte? StatusCode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the location of the stencil.
+    /// </summary>
+    [Column("location")]
+    [Required(ErrorMessage = "Stencil location is required.")]
+    [MaxLength(8, ErrorMessage = "Line name must be no longer than 8 characters (try truncating)")]
+    public string? Location { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ID of the model to which this stencil belongs.
+    /// </summary>
+    [NotDisplayed]
+    [Required(ErrorMessage = "Model name is required.")]
+    [Column("modelId")]
+    public int? ModelId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the binary checkplot data for the stencil.
+    /// </summary>
+    [NotDisplayed]
+    [Column("checkplot")]
+    public byte[]? Checkplot { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional note for the stencil.
+    /// </summary>
+    [Verbose]
+    [Column("note")]
+    public string? Note { get; set; }
+}
+
+/// <summary>
+/// Represents a stencil record in the view that provides model name and in the database.
+/// </summary>
+[Table("EnhancedStencilView")]
+[PrimaryKey(nameof(Barcode))]
+public class EnhancedStencil : IEquatable<EnhancedStencil>
+{
+    /// <summary>
+    /// Gets or sets the name of the model to which this stencil belongs.
+    /// </summary>
+    [Column("modelName")]
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stencil barcode.
+    /// </summary>
+    [Column("barcode")]
+    public string? Barcode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maker of the stencil.
+    /// </summary>
+    [Column("maker")]
     public string? Maker { get; set; }
 
     /// <summary>
@@ -157,95 +263,6 @@ public class Stencil
     public byte Thickness { get; set; }
 
     /// <summary>
-    /// Gets or sets the status code of the stencil.
-    /// </summary>
-    [Column("statusCode")]
-    public byte StatusCode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the location of the stencil.
-    /// </summary>
-    [Column("location")]
-    public string? Location { get; set; }
-
-    /// <summary>
-    /// Gets or sets the ID of the model to which this stencil belongs.
-    /// </summary>
-    [NotDisplayed]
-    [Column("modelId")]
-    public int ModelId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the binary checkplot data for the stencil.
-    /// </summary>
-    [Verbose]
-    [Column("checkplot")]
-    public byte[]? Checkplot { get; set; }
-
-    /// <summary>
-    /// Gets or sets an optional note for the stencil.
-    /// </summary>
-    [Verbose]
-    [Column("note")]
-    public string? Note { get; set; }
-}
-
-/// <summary>
-/// Represents a stencil record in the view that provides model name and in the database.
-/// </summary>
-[Table("EnhancedStencilView")]
-[PrimaryKey(nameof(Barcode))]
-public class EnhancedStencil
-{
-    /// <summary>
-    /// Gets or sets the name of the model to which this stencil belongs.
-    /// </summary>
-    [Column("modelName")]
-    public string? Model { get; set; }
-
-    /// <summary>
-    /// Gets or sets the stencil barcode.
-    /// </summary>
-    [Column("barcode")]
-    public string? Barcode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the maker of the stencil.
-    /// </summary>
-    [Column("maker")]
-    public string? Maker { get; set; }
-
-    /// <summary>
-    /// Gets or sets the job number for the stencil.
-    /// </summary>
-    [Column("jobNum")]
-    public string? JobNum { get; set; }
-
-    /// <summary>
-    /// Gets or sets the receive date for the stencil.
-    /// </summary>
-    [Column("receiveDate")]
-    public DateOnly? ReceiveDate { get; set; }
-
-    /// <summary>
-    /// Gets or sets the cycle count for the stencil.
-    /// </summary>
-    [Column("cycleCount")]
-    public int CycleCount { get; set; }
-
-    /// <summary>
-    /// Gets or sets the expiration date for the stencil.
-    /// </summary>
-    [Column("expirationDate")]
-    public DateOnly? ExpirationDate { get; set; }
-
-    /// <summary>
-    /// Gets or sets the thickness of the stencil.
-    /// </summary>
-    [Column("thickness")]
-    public byte Thickness { get; set; }
-
-    /// <summary>
     /// Gets or sets the status of the stencil.
     /// </summary>
     [Column("statusText")]
@@ -270,6 +287,20 @@ public class EnhancedStencil
     [Verbose]
     [Column("note")]
     public string? Note { get; set; }
+
+    public bool Equals(EnhancedStencil? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        return this.Barcode == other.Barcode;
+    }
+
+    public override bool Equals(object? obj) => this.Equals(obj as EnhancedStencil);
+
+    public override int GetHashCode() => this.Barcode.GetHashCode();
 }
 
 /// <summary>

@@ -4,6 +4,7 @@
 
 namespace SmtStencilInterface.Components.Pages;
 
+using BlazorBootstrap;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -17,11 +18,13 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
 
     private IList<string> availableLines = [];
 
-    private string targetModel = string.Empty;
+    private string? targetModel;
 
-    private string targetStatus = string.Empty;
+    private string? targetStatus;
 
-    private short dummyThickness = 0;
+    private short? dummyThickness;
+
+    private EnhancedStencil? target;
 
     /// <summary>
     /// When this page loads, set the default load.
@@ -62,7 +65,7 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
                                                 .AsNoTracking()
                                                 .Where(mp => mp.Model == this.targetModel)
                                                 .Select(mp => mp.Id)
-                                                .FirstAsync();
+                                                .FirstOrDefaultAsync();
         }
     }
 
@@ -81,5 +84,20 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
     private async Task ResolveThickness()
     {
         this.NewItem.Thickness = (byte)this.dummyThickness;
+    }
+
+    protected override void ShowSuccessToast()
+    {
+        using (SmtStencilingDbContext context = this.DbFactory.CreateDbContext())
+        {
+            this.target = context.EnhancedStencilView.FirstOrDefault(es => es.Barcode.Contains(this.NewItem.Barcode.ToString()));
+        }
+
+        this.ToastService.Notify(new (ToastType.Success, $"New stencil MSK{this.NewItem.Barcode} created successfully!"));
+
+        this.NewItem = new ();
+        this.targetModel = null;
+        this.targetStatus = null;
+        this.dummyThickness = null;
     }
 }
