@@ -34,6 +34,11 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
     public DbSet<EnhancedStencil> EnhancedStencilView { get; set; }
 
     /// <summary>
+    /// Gets or sets the status codes lookup table.
+    /// </summary>
+    public DbSet<StatusCode> StatusCodes { get; set; }
+
+    /// <summary>
     /// Gets or sets the stencil status changes history table.
     /// </summary>
     public DbSet<StencilStatusChange> StencilStatusChanges { get; set; }
@@ -220,7 +225,7 @@ public class EnhancedStencil
     /// Gets or sets the receive date for the stencil.
     /// </summary>
     [Column("receiveDate")]
-    public DateOnly ReceiveDate { get; set; }
+    public DateOnly? ReceiveDate { get; set; }
 
     /// <summary>
     /// Gets or sets the cycle count for the stencil.
@@ -232,7 +237,7 @@ public class EnhancedStencil
     /// Gets or sets the expiration date for the stencil.
     /// </summary>
     [Column("expirationDate")]
-    public DateOnly ExpirationDate { get; set; }
+    public DateOnly? ExpirationDate { get; set; }
 
     /// <summary>
     /// Gets or sets the thickness of the stencil.
@@ -255,7 +260,7 @@ public class EnhancedStencil
     /// <summary>
     /// Gets or sets the binary checkplot data for the stencil.
     /// </summary>
-    [Verbose]
+    [NotDisplayed]
     [Column("checkplot")]
     public byte[]? Checkplot { get; set; }
 
@@ -265,6 +270,26 @@ public class EnhancedStencil
     [Verbose]
     [Column("note")]
     public string? Note { get; set; }
+}
+
+/// <summary>
+/// Represents a status code record in the database.
+/// </summary>
+[Table("StatusCodes")]
+[PrimaryKey(nameof(Code))]
+public class StatusCode
+{
+    /// <summary>
+    /// Gets or sets the numeric status code.
+    /// </summary>
+    [Column("statusCode")]
+    public byte Code { get; set; }
+
+    /// <summary>
+    /// Gets or sets the status description text.
+    /// </summary>
+    [Column("statusText")]
+    public required string Status { get; set; }
 }
 
 /// <summary>
