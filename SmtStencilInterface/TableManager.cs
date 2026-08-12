@@ -313,6 +313,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// </summary>
     protected virtual void CloseForm()
     {
+        this.NewItem = new ();
         this.IsFormVisible = false;
         this.ErrorMessage = null;
     }
@@ -330,8 +331,9 @@ public class TableManager<TWrite, TRead> : TableManagerBase
             context.Set<TWrite>().Add(this.NewItem);
             await context.SaveChangesAsync();
 
+            this.InsertPreRefreshSequence();
             await this.RefreshData();
-            this.ShowSuccessToast();
+            this.InsertPostRefreshSequence();
             this.CloseForm();
         }
         catch (DbUpdateException)
@@ -346,11 +348,17 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     }
 
     /// <summary>
-    /// Hook for children to display toast before NewItem is cleared.
+    /// Hook for children to set filter values/sorts, etc. before the refresh.
     /// </summary>
-    protected virtual void ShowSuccessToast()
+    protected virtual void InsertPreRefreshSequence()
     {
-        this.NewItem = new ();
+    }
+
+    /// <summary>
+    /// Hook for children to change the view before <see cref="NewItem"/>  is cleared.
+    /// </summary>
+    protected virtual void InsertPostRefreshSequence()
+    {
     }
 
     /// <summary>

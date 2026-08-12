@@ -29,7 +29,6 @@
     [Parameter, EditorRequired]
     public TableManager<TWrite, TRead> Base { get; set; } = default!;
 
-    [Parameter] public bool PrintModeEngaged { get; set; }
     [Parameter] public EventCallback<TRead> OnPrint { get; set; }
     [Parameter] public EventCallback<TRead> OnExpand { get; set; }
     [Parameter] public EventCallback<TRead> OnApprove { get; set; }

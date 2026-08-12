@@ -43,7 +43,10 @@ public partial class CreateModel : TableManager<ModelPanel, ModelPanel>
         ? query.Where(x => x.Model.Contains(this.ModelFilter.Value))
         : query;
 
-    protected override void ShowSuccessToast()
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    protected override void InsertPostRefreshSequence()
     {
         this.ToastService.Notify(new (ToastType.Success, $"New panel {this.NewItem.PanelNum} created for model {this.NewItem.Model}"));
     }

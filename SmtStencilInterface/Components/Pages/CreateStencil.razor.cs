@@ -57,6 +57,48 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
         await base.OnInitializedAsync();
     }
 
+    /// <summary>
+    /// Applies the model filter if it is active.
+    /// </summary>
+    /// <param name="query"> <inheritdoc path="/param[@name='query']" /></param>
+    /// <returns><inheritdoc/></returns>
+    protected override IQueryable<EnhancedStencil> ApplyFilters(IQueryable<EnhancedStencil> query)
+    {
+        if (this.ModelFilter is { IsActive: true, Value: not null })
+        {
+            query = query.Where(x => x.Model.Contains(this.ModelFilter.Value));
+        }
+
+        if (this.BarcodeFilter is { IsActive: true, Value: not null })
+        {
+            query = query.Where(x => x.Barcode.Contains(this.BarcodeFilter.Value));
+        }
+
+        return query;
+    }
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    protected override void InsertPreRefreshSequence() => this.ModelFilter.Value = this.targetModel;
+
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    protected override void InsertPostRefreshSequence()
+    {
+        using (SmtStencilingDbContext context = this.DbFactory.CreateDbContext())
+        {
+            this.target = context.EnhancedStencilView.FirstOrDefault(es => es.Barcode.Contains(this.NewItem.Barcode.ToString()));
+        }
+
+        this.ToastService.Notify(new (ToastType.Success, $"New stencil MSK{this.NewItem.Barcode} created successfully!"));
+
+        this.targetModel = null;
+        this.targetStatus = null;
+        this.dummyThickness = null;
+    }
+
     private async Task ResolveModel()
     {
         using (SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync())
@@ -81,23 +123,5 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
         }
     }
 
-    private async Task ResolveThickness()
-    {
-        this.NewItem.Thickness = (byte)this.dummyThickness;
-    }
-
-    protected override void ShowSuccessToast()
-    {
-        using (SmtStencilingDbContext context = this.DbFactory.CreateDbContext())
-        {
-            this.target = context.EnhancedStencilView.FirstOrDefault(es => es.Barcode.Contains(this.NewItem.Barcode.ToString()));
-        }
-
-        this.ToastService.Notify(new (ToastType.Success, $"New stencil MSK{this.NewItem.Barcode} created successfully!"));
-
-        this.NewItem = new ();
-        this.targetModel = null;
-        this.targetStatus = null;
-        this.dummyThickness = null;
-    }
+    private async Task ResolveThickness() => this.NewItem.Thickness = (byte)this.dummyThickness;
 }
