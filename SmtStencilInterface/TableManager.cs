@@ -95,6 +95,16 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     public Filter<string> ModelFilter { get; set; } = new Filter<string>("Model", string.Empty);
 
     /// <summary>
+    /// Gets or sets the optional status filter.
+    /// </summary>
+    public Filter<string> StatusFilter { get; set; } = new Filter<string>("StatusText", string.Empty);
+
+    /// <summary>
+    /// Gets or sets the optional location filter.
+    /// </summary>
+    public Filter<string> LocationFilter { get; set; } = new Filter<string>("Location", string.Empty);
+
+    /// <summary>
     /// Gets or sets the error message for uniqueness constraint, if applicable.
     /// </summary>
     public string? ErrorMessage { get; set; }
@@ -267,10 +277,12 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// <returns>A Task representing that the filters have been cleared.</returns>
     public async Task ClearAllFilters()
     {
-        if (this.ModelFilter.IsActive || this.BarcodeFilter.IsActive)
+        if (this.ModelFilter.IsActive || this.BarcodeFilter.IsActive || this.StatusFilter.IsActive || this.LocationFilter.IsActive)
         {
             this.BarcodeFilter.Reset();
             this.ModelFilter.Reset();
+            this.StatusFilter.Reset();
+            this.LocationFilter.Reset();
 
             await this.RefreshData();
             this.StateHasChanged();

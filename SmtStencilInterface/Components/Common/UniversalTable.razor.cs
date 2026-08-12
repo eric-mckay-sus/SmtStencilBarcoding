@@ -27,6 +27,8 @@ public partial class UniversalTable<T>
     {
         { "Barcode", string.Empty },
         { "ModelName", string.Empty },
+        { "StatusText", string.Empty },
+        { "Location", string.Empty },
     };
 
     /// <summary>
@@ -106,6 +108,18 @@ public partial class UniversalTable<T>
     public Filter<string> ModelFilter { get; set; } = new Filter<string>("ModelName", string.Empty);
 
     /// <summary>
+    /// Gets or sets the status filter.
+    /// </summary>
+    [Parameter]
+    public Filter<string> StatusFilter { get; set; } = new Filter<string>("StatusText", string.Empty);
+
+    /// <summary>
+    /// Gets or sets the location filter.
+    /// </summary>
+    [Parameter]
+    public Filter<string> LocationFilter { get; set; } = new Filter<string>("Location", string.Empty);
+
+    /// <summary>
     /// Gets or sets the action to perform when a filter changes.
     /// </summary>
     [Parameter]
@@ -134,18 +148,22 @@ public partial class UniversalTable<T>
     // Printing
 
     /// <summary>
-    /// Gets or sets the action to bind to the print button being pressed.
+    /// Gets or sets the action to bind to the edit button being pressed.
     /// </summary>
     [Parameter]
     public EventCallback<T> OnEdit { get; set; }
 
-    // Approval
-
     /// <summary>
-    /// Gets or sets the action to bind to approval.
+    /// Gets or sets the action to bind to downloading the checkplot.
     /// </summary>
     [Parameter]
-    public EventCallback<T> OnApprove { get; set; }
+    public EventCallback<T> OnDownload { get; set; }
+
+    /// <summary>
+    /// Gets or sets the action to take when a CSV is requested.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnSaveToCsv { get; set; }
 
     /// <summary>
     /// Gets or sets the action to bind to denial.
@@ -214,7 +232,7 @@ public partial class UniversalTable<T>
     /// <summary>
     /// Gets a value indicating whether to show the actions column.
     /// </summary>
-    private bool ShowActions => this.OnExpand.HasDelegate || this.OnEdit.HasDelegate || this.OnApprove.HasDelegate || this.OnRemake.HasDelegate;
+    private bool ShowActions => this.OnExpand.HasDelegate || this.OnEdit.HasDelegate || this.OnDownload.HasDelegate || this.OnRemake.HasDelegate;
 
     /// <summary>
     /// When the parameters change, make sure the search filter backing fields are still accurate.
@@ -224,6 +242,8 @@ public partial class UniversalTable<T>
         // Sync local fields when parameters change from parent
         this.filterInputs["Barcode"] = this.BarcodeFilter?.Value ?? string.Empty;
         this.filterInputs["ModelName"] = this.ModelFilter?.Value ?? string.Empty;
+        this.filterInputs["StatusText"] = this.StatusFilter?.Value ?? string.Empty;
+        this.filterInputs["Location"] = this.LocationFilter?.Value ?? string.Empty;
     }
 
     private async Task HandleExpand(T item)

@@ -12,6 +12,8 @@
     OnPageChange="Base.ChangePage"
     BarcodeFilter="Base.BarcodeFilter"
     ModelFilter="Base.ModelFilter"
+    StatusFilter="Base.StatusFilter"
+    LocationFilter="Base.LocationFilter"
     OnFilterChange="() => Base.RefreshData()"
     ClearFilters="Base.ClearAllFilters"
     OnSort="Base.ToggleSort"
@@ -19,11 +21,12 @@
     OnPageSizeChange="Base.AlterPageSize"
     OnEdit="OnEdit"
     OnExpand="OnExpand"
-    OnApprove="OnApprove"
+    OnDownload="OnDownload"
     OnDeny="OnDeny"
     OnRemake="OnRemake"
     Target="Target"
-    TargetStyle="@TargetStyle"/>
+    TargetStyle="@TargetStyle"
+    OnSaveToCsv="OnSaveToCsv"/>
 
 @code{
     [Parameter, EditorRequired]
@@ -31,9 +34,10 @@
 
     [Parameter] public EventCallback<TRead> OnExpand { get; set; }
     [Parameter] public EventCallback<TRead> OnEdit { get; set; }
-    [Parameter] public EventCallback<TRead> OnApprove { get; set; }
+    [Parameter] public EventCallback<TRead> OnDownload { get; set; }
     [Parameter] public EventCallback<TRead> OnDeny { get; set; }
     [Parameter] public EventCallback<TRead> OnRemake { get; set; }
     [Parameter] public TRead? Target { get; set; }
     [Parameter] public string? TargetStyle { get; set; }
+    [Parameter] public EventCallback OnSaveToCsv { get; set; }
 }
