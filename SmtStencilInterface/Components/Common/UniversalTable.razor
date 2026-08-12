@@ -69,10 +69,10 @@ else if (Items != null)
                                         style="width: 10rem;"
                                         id="barcode-filter"
                                         placeholder="Filter barcode..."
-                                        value="@BarcodeFilter.Value"
+                                        value='@filterInputs["Barcode"]'
                                         autocomplete="off"
                                         @onclick:stopPropagation
-                                        @oninput="e => _ = HandleFilterInput(BarcodeFilter, e.Value?.ToString())" />
+                                        @oninput='e => _ = HandleFilterInput(BarcodeFilter, e.Value?.ToString())' />
                                 </div>
                             }
 
@@ -83,10 +83,10 @@ else if (Items != null)
                                         style="width: 10rem;"
                                         id="model-filter"
                                         placeholder="Filter model..."
-                                        value="@ModelFilter.Value"
+                                        value='@filterInputs["ModelName"]'
                                         autocomplete="off"
                                         @onclick:stopPropagation
-                                        @oninput="e => _ = HandleFilterInput(ModelFilter, e.Value?.ToString())" />
+                                        @oninput='e => _ = HandleFilterInput(ModelFilter, e.Value?.ToString())'' />
                                 </div>
                             }
                         </td>

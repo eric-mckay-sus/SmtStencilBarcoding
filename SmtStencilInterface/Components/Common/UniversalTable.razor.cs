@@ -21,6 +21,15 @@ public partial class UniversalTable<T>
     private readonly PropertyInfo[] cachedProps = typeof(T).GetProperties().Where(p => p.GetCustomAttribute<NotDisplayedAttribute>() == null).ToArray();
 
     /// <summary>
+    /// Local cache of the barcode filter value for immediate UI feedback.
+    /// </summary>
+    private readonly Dictionary<string, string> filterInputs = new ()
+    {
+        { "Barcode", string.Empty },
+        { "ModelName", string.Empty },
+    };
+
+    /// <summary>
     /// Tracks whether the table is in expanded view.
     /// </summary>
     private bool isExpanded = false;
@@ -207,6 +216,13 @@ public partial class UniversalTable<T>
     /// </summary>
     private bool ShowActions => this.OnExpand.HasDelegate || this.OnPrint.HasDelegate || this.OnApprove.HasDelegate || this.OnRemake.HasDelegate;
 
+    protected override void OnParametersSet()
+    {
+        // Sync local fields when parameters change from parent
+        this.filterInputs["Barcode"] = this.BarcodeFilter?.Value ?? string.Empty;
+        this.filterInputs["ModelName"] = this.ModelFilter?.Value ?? string.Empty;
+    }
+
     private async Task HandleExpand(T item)
     {
         this.isExpanded = !this.isExpanded;
@@ -323,7 +339,7 @@ public partial class UniversalTable<T>
     /// <returns>A Task representing that the DB has been hit and the model is ready to re-render.</returns>
     private async Task HandleFilterInput(Filter<string> filter, string? value)
     {
-        filter.Value = value; // Write immediately, no render yet
+        this.filterInputs[filter.Key] = value ?? string.Empty;
 
         if (this.filterDebounce != null)
         {
@@ -337,6 +353,7 @@ public partial class UniversalTable<T>
         try
         {
             await Task.Delay(300, token);
+            filter.Value = value; // Write to actual filter
             await this.OnFilterChange.InvokeAsync(); // This triggers RefreshData in the parent, which calls StateHasChanged
             await this.JS.InvokeVoidAsync("focusElement", $"{filter.Key.ToLower()}-filter");
         }

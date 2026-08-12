@@ -39,11 +39,14 @@ public partial class CreateModel : TableManager<ModelPanel, ModelPanel>
     /// <param name="query"> <inheritdoc path="/param[@name='query']" /></param>
     /// <returns><inheritdoc/></returns>
     protected override IQueryable<ModelPanel> ApplyFilters(IQueryable<ModelPanel> query) =>
-        this.ModelFilter is { IsActive: true, Value: not null}
+        this.ModelFilter is { IsActive: true, Value: not null }
         ? query.Where(x => x.Model.Contains(this.ModelFilter.Value))
         : query;
 
-    protected override void ShowSuccessToast()
+    /// <summary>
+    /// <inheritdoc/>
+    /// </summary>
+    protected override void InsertPostRefreshSequence()
     {
         this.ToastService.Notify(new (ToastType.Success, $"New panel {this.NewItem.PanelNum} created for model {this.NewItem.Model}"));
     }
