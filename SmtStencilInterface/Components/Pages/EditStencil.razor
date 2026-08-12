@@ -84,6 +84,11 @@
                                 <input id="note" value="@NewItem.Note" class="form-control" autocomplete="off" disabled="true" />
                             </div>
                         </div>
+                        <UploadCheckplot
+                            SerializedFile="NewItem.Checkplot"
+                            OnFileUploaded="@((file) => NewItem.Checkplot = file)"
+                            OnFileCleared="@(() => NewItem.Checkplot = new byte[UploadCheckplot.MaxFileSize])"
+                            HasOriginalFile="@(target?.HasCheckplot ?? false)" />
 
                         <div class="form-actions d-flex justify-content-center gap-4">
                             <button type="button" class="btn btn-outline-secondary btn-lg me-2" @onclick="CloseForm">Cancel</button>

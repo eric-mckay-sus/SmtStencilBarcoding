@@ -19,36 +19,20 @@ public class BlazorInputProvider : IInputProvider
     private TaskCompletionSource<string>? inputTcs;
 
     /// <summary>
-    /// Stores a file result that was supplied before the parser requested a file path.
-    /// </summary>
-    private string? pendingFileResult;
-
-    /// <summary>
     /// Controls the completion state of a confirmation request.
     /// Blazor may control this as it sees fit without using a blocking call (thereby freezing itself bc Blazor is single-thread).
     /// </summary>
     private TaskCompletionSource<bool>? confirmTcs;
 
     /// <summary>
-    /// Controls the completion state of a file request.
-    /// Blazor may control this as it sees fit without using a blocking call (thereby freezing itself bc Blazor is single-thread).
+    /// The Blazor action to perform when GetInputAsync is called.
     /// </summary>
-    private TaskCompletionSource<string?>? fileTcs;
-
-    /// <summary>
-    /// The Blazor action to perform when string input is requested.
-    /// </summary>
-    public event Action<Report, string?>? OnInputRequested;
+    public event Func<Report, string?, Task>? OnInputRequested;
 
     /// <summary>
     /// The Blazor action to perform when a simple yes/no confirmation is requested
     /// </summary>
-    public event Action<Report>? OnConfirmationRequested;
-
-    /// <summary>
-    /// The Blazor action to perform when a file is requested
-    /// </summary>
-    public event Action<Report, string?>? OnFileRequested;
+    public event Func<Report, Task>? OnConfirmationRequested;
 
     /// <summary>
     /// <inheritdoc/>
@@ -76,27 +60,6 @@ public class BlazorInputProvider : IInputProvider
     }
 
     /// <summary>
-    /// <inheritdoc/>
-    /// It is recommended that Blazor use the browser's file selection tool rather than simply calling <see cref="GetInputAsync"/> from the event.
-    /// </summary>
-    /// <param name="prompt"><inheritdoc path="/param[@name='prompt']"/></param>
-    /// <param name="previousError"><inheritdoc path="/param[@name='previousError']"/></param>
-    /// <returns><inheritdoc/></returns>
-    public Task<string?> GetFilepathAsync(Report prompt, string? previousError = null)
-    {
-        if (this.pendingFileResult is not null)
-        {
-            string? result = this.pendingFileResult;
-            this.pendingFileResult = null;
-            return Task.FromResult<string?>(result);
-        }
-
-        this.fileTcs = new TaskCompletionSource<string?>();
-        this.OnFileRequested?.Invoke(prompt, previousError);
-        return this.fileTcs.Task;
-    }
-
-    /// <summary>
     /// Fills <see cref="inputTcs"/> with <paramref name="result"/>.
     /// </summary>
     /// <param name="result">The desired contents of <see cref="inputTcs"/>. </param>
@@ -107,21 +70,6 @@ public class BlazorInputProvider : IInputProvider
     /// </summary>
     /// <param name="result">The desired contents of <see cref="confirmTcs"/>. </param>
     public void SetConfirmResult(bool result) => this.confirmTcs?.TrySetResult(result);
-
-    /// <summary>
-    /// Fills <see cref="fileTcs"/> with <paramref name="result"/>.
-    /// </summary>
-    /// <param name="result">The desired contents of <see cref="fileTcs"/>. </param>
-    public void SetFileResult(string? result)
-    {
-        if (this.fileTcs is not null)
-        {
-            this.fileTcs.TrySetResult(result);
-            return;
-        }
-
-        this.pendingFileResult = result;
-    }
 }
 
 /// <summary>
@@ -132,7 +80,12 @@ public class BlazorReporter : IOutputProvider
     /// <summary>
     /// Notify the UI to re-render. The Blazor page must bind its StateHasChanged method to this Action.
     /// </summary>
-    public event Action? OnNotify;
+    public event Func<Task>? OnNotify;
+
+    /// <summary>
+    /// Notify the UI that there is a new progress event
+    /// </summary>
+    public event Func<ProgressEvent, Task>? OnProgressEventChanged;
 
     /// <summary>
     /// Gets the name of the file currently being processed.
@@ -147,7 +100,7 @@ public class BlazorReporter : IOutputProvider
     /// <summary>
     /// Gets the list of <see cref="Report"/> objects that document a warning or error.
     /// </summary>
-    public IList<Report> Logs { get; private set; } = [];
+    public IList<(TimeOnly time, Report content)> Logs { get; private set; } = [];
 
     /// <summary>
     /// Gets or sets the underlying DataTable object that stores the preview information.
@@ -202,7 +155,7 @@ public class BlazorReporter : IOutputProvider
         // Only log errors to the Blazor interface
         if ((report.level == ReportLevel.WARNING || report.level == ReportLevel.ERROR) && !report.message.Contains("Please try again"))
         {
-            this.Logs.Add(report);
+            this.Logs.Add((TimeOnly.FromDateTime(DateTime.Now), report));
         }
 
         this.OnNotify?.Invoke();
@@ -242,6 +195,7 @@ public class BlazorReporter : IOutputProvider
                 break;
         }
 
+        this.OnProgressEventChanged?.Invoke(ev);
         this.OnNotify?.Invoke();
         return Task.CompletedTask;
     }

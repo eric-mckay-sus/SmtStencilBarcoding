@@ -1,0 +1,78 @@
+﻿@inherits TableManager<Stencil, EnhancedStencil>
+
+<div>
+    @if (HasOriginalFile || selectedFile != null)
+    {
+        <div class="alert alert-info mt-2 mb-3" role="alert">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    @if (HasOriginalFile)
+                    {
+                        <p class="mb-1"><i class="bi bi-check-circle-fill text-success"></i> <strong>Original Record:</strong> Contains a checkplot file</p>
+                    }
+                    @if (selectedFile != null)
+                    {
+                        <p class="mb-0"><i class="bi bi-file-earmark-check text-success"></i> <strong>Pending Upload:</strong> <code>@selectedFile.Name</code> (@((selectedFile.Size / 1024) + 1) KB)</p>
+                    }
+                </div>
+                @if (selectedFile != null)
+                {
+                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="ClearFile" title="Clear the pending file upload">
+                        <i class="bi bi-trash"></i> Clear
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="centered-container my-2">
+        <div class="upload-card @(IsDragging ? "drag-active" : "")">
+            <label for="fileInput" class="upload-button">
+                <i class="bi bi-cloud-arrow-up" style="font-size: 26px"></i> Choose Checkplot File (GBX)
+            </label>
+            <InputFile id="fileInput" OnChange="HandleFileSelected" accept=".gbx" class="hidden-input-overlay"
+                @ondragenter="HandleDragEnter"
+                @ondragleave="HandleDragLeave"
+                @ondragover="HandleDragOver"
+                @ondrop="HandleDrop" />
+        </div>
+    </div>
+
+    <div class="expandable-container">
+        <div class="expandable-wrapper @(IsAwaitingConfirmation ? "is-expanded" : "")">
+            <div class="expandable-content">
+                <Alert Color="AlertColor.Danger" Class="mt-3 animate-fade-in">
+                    <p>
+                        <strong>File Selected:</strong>
+                        @(selectedFile?.Name ?? "No file selected")
+                        (@((selectedFile?.Size ?? 0) / 1024) KB)</p>
+                    <Button Color="ButtonColor.Danger" @onclick="() => HandleConfirm(true)">
+                        <Icon Name="IconName.ExclamationTriangle" /> Confirm Overwrite
+                    </Button>
+                    <Button Color="ButtonColor.Secondary" @onclick="() => HandleConfirm(false)">Cancel</Button>
+                </Alert>
+            </div>
+        </div>
+    </div>
+
+    @if (IsUploading && !IsAwaitingConfirmation && DisplayPercent < 100)
+    {
+        <div class="centered-container mx-auto w-100">
+            <div class="mt-3 w-50">
+                <div class="d-flex align-items-center justify-content-center mb-2">
+                    <div class="spinner-border text-primary me-2" role="status"></div>
+                </div>
+                <div class="progress mt-2" style="height: 20px">
+                    <div class="progress-bar progress-bar-animated"
+                        role="progressbar"
+                        style="width: @((int)DisplayPercent)%; transition: width 0.1s linear;"
+                        aria-valuenow="@((int)DisplayPercent)"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+                        @((int)DisplayPercent)%
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
