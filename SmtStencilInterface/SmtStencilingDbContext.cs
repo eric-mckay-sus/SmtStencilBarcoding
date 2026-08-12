@@ -204,6 +204,7 @@ public class Stencil
     /// </summary>
     [Verbose]
     [Column("note")]
+    [MaxLength(50, ErrorMessage = "Note must be no longer than 50 characters.")]
     public string? Note { get; set; }
 }
 
@@ -280,6 +281,12 @@ public class EnhancedStencil : IEquatable<EnhancedStencil>
     [NotDisplayed]
     [Column("checkplot")]
     public byte[]? Checkplot { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether this stencil has checkplot data.
+    /// </summary>
+    [Verbose]
+    public bool HasCheckplot => this.Checkplot is not null;
 
     /// <summary>
     /// Gets or sets an optional note for the stencil.

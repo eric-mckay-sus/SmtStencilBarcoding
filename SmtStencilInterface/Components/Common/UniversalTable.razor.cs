@@ -137,7 +137,7 @@ public partial class UniversalTable<T>
     /// Gets or sets the action to bind to the print button being pressed.
     /// </summary>
     [Parameter]
-    public EventCallback<T> OnPrint { get; set; }
+    public EventCallback<T> OnEdit { get; set; }
 
     // Approval
 
@@ -214,8 +214,11 @@ public partial class UniversalTable<T>
     /// <summary>
     /// Gets a value indicating whether to show the actions column.
     /// </summary>
-    private bool ShowActions => this.OnExpand.HasDelegate || this.OnPrint.HasDelegate || this.OnApprove.HasDelegate || this.OnRemake.HasDelegate;
+    private bool ShowActions => this.OnExpand.HasDelegate || this.OnEdit.HasDelegate || this.OnApprove.HasDelegate || this.OnRemake.HasDelegate;
 
+    /// <summary>
+    /// When the parameters change, make sure the search filter backing fields are still accurate.
+    /// </summary>
     protected override void OnParametersSet()
     {
         // Sync local fields when parameters change from parent

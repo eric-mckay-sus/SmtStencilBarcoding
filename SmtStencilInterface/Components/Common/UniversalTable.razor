@@ -139,6 +139,14 @@ else if (Items != null)
                                         }
                                     </button>
                                 }
+                                @if (OnEdit.HasDelegate){
+                                    <button class="btn btn-link btn-action p-0 me-2"
+                                            @onclick="() => OnEdit.InvokeAsync(item)"
+                                            @onclick:stopPropagation
+                                            title="Edit">
+                                        <Icon Name="IconName.Pencil" Size="IconSize.x4" />
+                                    </button>
+                                }
                                 @if (OnApprove.HasDelegate){
                                     <button class="btn btn-link btn-action p-0 me-2"
                                             @onclick="() => OnApprove.InvokeAsync(item)"

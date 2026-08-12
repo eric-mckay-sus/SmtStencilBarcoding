@@ -319,16 +319,25 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     }
 
     /// <summary>
-    /// On submit, attempt to insert into table, and catch potential constraint violations.
+    /// On submit, attempt to insert/update into table, and catch potential constraint violations.
     /// </summary>
+    /// <param name="isInsert">A value indicating whether this submission is an insert (or an update).</param>
     /// <returns>A Task representing that <see cref="NewItem"/> has been successfully inserted/updated.</returns>
-    protected virtual async Task HandleValidSubmit()
+    protected virtual async Task HandleValidSubmit(bool isInsert = false)
     {
         this.ErrorMessage = null;
         try
         {
             using SmtStencilingDbContext context = this.DbFactory.CreateDbContext();
-            context.Set<TWrite>().Add(this.NewItem);
+            if (isInsert)
+            {
+                context.Set<TWrite>().Add(this.NewItem);
+            }
+            else
+            {
+                context.Set<TWrite>().Update(this.NewItem);
+            }
+
             await context.SaveChangesAsync();
 
             this.InsertPreRefreshSequence();

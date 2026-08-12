@@ -9,7 +9,7 @@ using System.Data;
 /// Contains the results of an attempted batch/file parse.
 /// The readonly modifier makes this immutable to avoid accidentally clobbering a ParseResult (e.g. by misusing pass-by-value behavior).
 /// </summary>
-public readonly record struct LogParseResult(bool hasDuplicate = false, bool hasFormatError = false, bool hasMiscError = false, bool alreadyUploaded = false)
+public readonly record struct ParseResult(bool hasDuplicate = false, bool hasFormatError = false, bool hasMiscError = false, bool alreadyUploaded = false)
 {
     /// <summary>
     /// Gets a value indicating whether the batch/file contained a duplicate (internally or with an entry already in the DB).
@@ -32,19 +32,14 @@ public readonly record struct LogParseResult(bool hasDuplicate = false, bool has
     public bool AlreadyUploaded { get; } = alreadyUploaded;
 
     /// <summary>
-    /// Gets a value indicating whether a parse was flagged with an issue, thus any DB interaction should be rolled back.
-    /// </summary>
-    public bool Flagged => this.HasDuplicate || this.HasFormatError || this.HasMiscError || this.AlreadyUploaded;
-
-    /// <summary>
-    /// Overload the | operator to enable using <see cref="LogParseResult"/> as a bitmask for OR.
+    /// Overload the | operator to enable using <see cref="ParseResult"/> as a bitmask for OR.
     /// </summary>
     /// <param name="left">The left hand side of the OR operator.</param>
     /// <param name="right">The right hand side of the OR operator.</param>
     /// <returns>A new ParseResult with the binary OR of <paramref name="left"/> and <paramref name="right"/>.</returns>
-    public static LogParseResult operator |(LogParseResult left, LogParseResult right)
+    public static ParseResult operator |(ParseResult left, ParseResult right)
     {
-        return new LogParseResult(
+        return new ParseResult(
             left.HasDuplicate || right.HasDuplicate,
             left.HasFormatError || right.HasFormatError,
             left.HasMiscError || right.HasMiscError,
@@ -109,6 +104,16 @@ public enum ProgressEvent
     FileCompleted,
 
     /// <summary>
+    /// The event representing when deletion begins.
+    /// </summary>
+    ClearStarted,
+
+    /// <summary>
+    /// The event representing when the actual DB writing begins.
+    /// </summary>
+    UploadStarted,
+
+    /// <summary>
     /// The event representing when the entire upload is complete.
     /// </summary>
     UploadComplete,
@@ -143,12 +148,11 @@ public enum UploadResult
 /// <summary>
 /// The data packet used by I/O classes to track a file with its upload status
 /// </summary>
-/// <param name="file">The file containing the report info.</param>
-/// <param name="barcode">The barcode of the part(s) tested.</param>
-/// <param name="alreadyUploaded">Whether these contents were already uploaded under this barcode (so the file was detected as a duplicate)</param>
-/// <param name="hadErrors">Whether the upload encountered errors.</param>
-/// <param name="rowsUploaded">The number of rows uploaded for this file.</param>
-public record FileResult(string file, string barcode, bool alreadyUploaded, bool hadErrors, int rowsUploaded);
+/// <param name="file">The file containing the model.</param>
+/// <param name="model">The model name (from C. Core).</param>
+/// <param name="parseResult">A <see cref="ParseResult"/> indicating the success/failure mode of the parse.</param>
+/// <param name="rowsUploaded">The number of rows uploaded for this model.</param>
+public record FileResult(string file, string model, ParseResult parseResult, int rowsUploaded);
 
 /// <summary>
 /// Communicates the current state of a batch upload to the Blazor layer.
@@ -210,14 +214,6 @@ public interface IInputProvider
     /// <param name="prompt">The prompt requiring confirmation.</param>
     /// <returns>A Task containing a boolean representing whether the prompt was confirmed.</returns>
     Task<bool> GetConfirmAsync(Report prompt);
-
-    /// <summary>
-    /// Prompts for and awaits a file (not validated).
-    /// </summary>
-    /// <param name="prompt">The prompt requiring a file.</param>
-    /// <param name="previousError">The previous error that prompted this input, if applicable.</param>
-    /// <returns>A Task containing a nullable (in case of empty path) string representing the safe file path.</returns>
-    Task<string?> GetFilepathAsync(Report prompt, string? previousError = null);
 }
 
 /// <summary>
@@ -263,15 +259,4 @@ public interface IOutputProvider
     /// <param name="dt">The DataTable to display.</param>
     /// <returns>A Task representing the completion of the method.</returns>
     Task ShowPreview(DataTable dt);
-
-    /// <summary>
-    /// Initializes the progress tracker, if the implementation has one.
-    /// </summary>
-    /// <param name="totalFiles">The number of files with which to initialize the progress tracker.</param>
-    void InitializeProgress(int totalFiles);
-
-    /// <summary>
-    /// Empties the log container, if the implementation has one.
-    /// </summary>
-    void ClearLogs();
 }

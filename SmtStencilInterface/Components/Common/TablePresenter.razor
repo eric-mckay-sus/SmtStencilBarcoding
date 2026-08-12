@@ -17,7 +17,7 @@
     OnSort="Base.ToggleSort"
     GetSortIcon="Base.GetSortIcon"
     OnPageSizeChange="Base.AlterPageSize"
-    OnPrint="OnPrint"
+    OnEdit="OnEdit"
     OnExpand="OnExpand"
     OnApprove="OnApprove"
     OnDeny="OnDeny"
@@ -29,8 +29,8 @@
     [Parameter, EditorRequired]
     public TableManager<TWrite, TRead> Base { get; set; } = default!;
 
-    [Parameter] public EventCallback<TRead> OnPrint { get; set; }
     [Parameter] public EventCallback<TRead> OnExpand { get; set; }
+    [Parameter] public EventCallback<TRead> OnEdit { get; set; }
     [Parameter] public EventCallback<TRead> OnApprove { get; set; }
     [Parameter] public EventCallback<TRead> OnDeny { get; set; }
     [Parameter] public EventCallback<TRead> OnRemake { get; set; }
