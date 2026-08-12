@@ -9,7 +9,7 @@
     <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
         <div class="expandable-content">
             <div class="form-card mb-3">
-                <EditForm Model="@NewItem" OnValidSubmit="@HandleValidSubmit">
+                <EditForm Model="@NewItem" OnValidSubmit="@(() => HandleValidSubmit())">
                     <DataAnnotationsValidator />
                     <div class="form-container">
                         <h5 class="form-title">Model Details</h5>

@@ -3,10 +3,105 @@
 
 <PageTitle>Stencil Editing</PageTitle>
 
-<h1>Stencil table with expand/edit options</h1>
+<h2>Edit Stencils</h2>
 
-<h1>Space for checkplot upload</h1>
+<div class="expandable-container">
+    <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
+        <div class="expandable-content">
+            <div class="form-card mb-3">
+                <EditForm Model="@NewItem" OnValidSubmit="@(async () => await HandleValidSubmit(isInsert: false))">
+                    <DataAnnotationsValidator />
+                    <div class="form-container">
+                        <h5 class="form-title">Stencil Details</h5>
+                        <div class="row g-3">
+                            <div class="col-2">
+                                <label for="name" class="form-label" disabled="disabled">Stencil Maker:</label>
+                                <input id="name" value="@NewItem.Maker" class="form-control" autocomplete="off" disabled="true" />
+                            </div>
+                            <div class="col-2">
+                                <label for="panelNum" class="form-label">Job Number:</label>
+                                <InputText id="panelNum" @bind-Value="NewItem.JobNum" class="form-control" autocomplete="off" />
+                                <ValidationMessage For="@(() => NewItem.JobNum)" />
+                            </div>
+                            <div class="col-2">
+                                <label class="form-label">Date Received</label>
+                                <input type="date"
+                                    class="form-control"
+                                    @bind="NewItem.ReceiveDate"
+                                    max="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
+                                <ValidationMessage For="@(() => NewItem.ReceiveDate)" />
+                            </div>
+                            <div class="col-2">
+                                <label for="cycle" class="form-label">Cycle Count:</label>
+                                <InputNumber id="cycle" @bind-Value="NewItem.CycleCount" class="form-control" />
+                                <ValidationMessage For="@(() => NewItem.CycleCount)" />
+                            </div>
+                            <div class="col-2">
+                                <label for="thickness" class="form-label" disabled="disabled">Thickness (mm):</label>
+                                <input id="thickness" value="@((short?)NewItem.Thickness)" class="form-control" disabled="true" />
+                            </div>
+                            <div class="col-2">
+                                <label class="form-label">Expiration Date</label>
+                                <input type="date"
+                                    class="form-control"
+                                    @bind="NewItem.ExpirationDate"
+                                    min="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
+                                <ValidationMessage For="@(() => NewItem.ExpirationDate)" />
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-3">
+                                <label for="model" class="form-label">Model Name:</label>
+                                <InputText list="models" id="model" @bind-Value="targetModel" @bind-Value:after="ResolveModel" class="form-control" autocomplete="off" />
+                                <datalist id="models">
+                                    @foreach (string m in availableModels)
+                                    {
+                                        <option value="@m">@m</option>
+                                    }
+                                </datalist>
+                                <ValidationMessage For="@(() => NewItem.ModelId)" />
+                            </div>
+                            <div class="col-3">
+                                <label for="line" class="form-label">Location:</label>
+                                <InputText list="lines" id="line" @bind-Value="NewItem.Location" class="form-control" autocomplete="off" />
+                                <datalist id="lines">
+                                    @foreach (string l in availableLines)
+                                    {
+                                        <option value="@l">@l</option>
+                                    }
+                                </datalist>
+                                <ValidationMessage For="@(() => NewItem.Location)" />
+                            </div>
+                            <div class="col-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select id="status" class="form-select" value="@targetStatus" disabled="true" title="To update stencil status, please use the dedicated status update page.">
+                                    <option>@targetStatus</option>
+                                </select>
+                                <ValidationMessage For="@(() => NewItem.StatusCode)" />
+                            </div>
+                            <div class="col-3">
+                                <label for="note" class="form-label">Note:</label>
+                                <input id="note" value="@NewItem.Note" class="form-control" autocomplete="off" disabled="true" />
+                            </div>
+                        </div>
+
+                        <div class="form-actions d-flex justify-content-center gap-4">
+                            <button type="button" class="btn btn-outline-secondary btn-lg me-2" @onclick="CloseForm">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-plus-lg"></i> Save Stencil
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+                <ErrorDisplay ErrorMessage="@ErrorMessage" />
+            </div>
+        </div>
+    </div>
+</div>
 
 <TablePresenter TWrite="Stencil"
                 TRead="EnhancedStencil"
+                Target="target"
+                OnExpand="() => {}"
+                OnEdit="HandleEdit"
                 Base="this" />

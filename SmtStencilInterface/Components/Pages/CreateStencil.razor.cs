@@ -54,6 +54,7 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
         }
 
         this.SortList.Add(new ("ReceiveDate", SortDir.Desc));
+        this.SortList.Add(new ("Barcode", SortDir.Desc));
         await base.OnInitializedAsync();
     }
 
