@@ -26,7 +26,8 @@ public partial class ViewStencils : TableManager<Stencil, EnhancedStencil>
     /// <returns>A Task representing that the page has loaded.</returns>
     protected override async Task OnInitializedAsync()
     {
-        this.SortList.Add(new ("Barcode", SortDir.Asc));
+        this.SortList.Add(new ("ReceiveDate", SortDir.Desc));
+        this.SortList.Add(new ("Barcode", SortDir.Desc));
         await base.OnInitializedAsync();
     }
 

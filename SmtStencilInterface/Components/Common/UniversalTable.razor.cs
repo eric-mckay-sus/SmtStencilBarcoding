@@ -234,6 +234,8 @@ public partial class UniversalTable<T>
     /// </summary>
     private bool ShowActions => this.OnExpand.HasDelegate || this.OnEdit.HasDelegate || this.OnDownload.HasDelegate || this.OnRemake.HasDelegate;
 
+    private bool ShowFilterClear => this.filterInputs.Values.Any(f => !string.IsNullOrEmpty(f));
+
     /// <summary>
     /// When the parameters change, make sure the search filter backing fields are still accurate.
     /// </summary>
@@ -244,6 +246,24 @@ public partial class UniversalTable<T>
         this.filterInputs["ModelName"] = this.ModelFilter?.Value ?? string.Empty;
         this.filterInputs["StatusText"] = this.StatusFilter?.Value ?? string.Empty;
         this.filterInputs["Location"] = this.LocationFilter?.Value ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Determines whether the current record has a true 'HasCheckplot' property.
+    /// </summary>
+    private static bool ShouldShowDownloadButton(T item)
+    {
+        // Look for a property named "HasCheckplot" on type T
+        PropertyInfo? prop = typeof(T).GetProperty("HasCheckplot", BindingFlags.Public | BindingFlags.Instance);
+
+        // Check if property exists, is boolean, and its value is true
+        if (prop != null && prop.PropertyType == typeof(bool))
+        {
+            object? value = prop.GetValue(item);
+            return value is true;
+        }
+
+        return false;
     }
 
     private async Task HandleExpand(T item)

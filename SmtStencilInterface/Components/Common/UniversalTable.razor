@@ -19,10 +19,15 @@
                     <option value="500" selected="@(PageSize == 500)">500</option>
                 </select>
             </div>
-            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" Outline="true" @onclick="ClearFilters">Clear Filters</Button>
+            @if (ShowFilterClear){
+                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" Outline="true" @onclick="ClearFilters">
+                    <Icon Name="IconName.XCircle" />
+                    <span>Clear Filters</span>
+                </Button>
+            }
             @if(OnSaveToCsv.HasDelegate)
             {
-                <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" @onclick="OnSaveToCsv">
+                <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
                     <Icon Name="IconName.Download" />
                     <span>Save to CSV</span>
                 </Button>
@@ -102,7 +107,7 @@ else if (Items != null)
                                 <div class="centered-container">
                                     <input class="form-control form-control-sm mt-1"
                                         style="width: 10rem;"
-                                        id="status-filter"
+                                        id="statustext-filter"
                                         placeholder="Filter status..."
                                         value='@filterInputs["StatusText"]'
                                         autocomplete="off"
@@ -182,7 +187,7 @@ else if (Items != null)
                                         <Icon Name="IconName.Pencil" Size="IconSize.x4" />
                                     </button>
                                 }
-                                @if (OnDownload.HasDelegate){
+                                @if (OnDownload.HasDelegate && ShouldShowDownloadButton(item)){
                                     <button class="btn btn-link btn-action p-0 me-2"
                                             @onclick="() => OnDownload.InvokeAsync(item)"
                                             @onclick:stopPropagation
