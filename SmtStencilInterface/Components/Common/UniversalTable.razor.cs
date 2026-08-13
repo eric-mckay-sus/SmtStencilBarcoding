@@ -27,6 +27,7 @@ public partial class UniversalTable<T>
     {
         { "Barcode", string.Empty },
         { "ModelName", string.Empty },
+        { "PanelNum", string.Empty },
         { "StatusText", string.Empty },
         { "Location", string.Empty },
     };
@@ -76,12 +77,6 @@ public partial class UniversalTable<T>
     public bool IsLoading { get; set; } = false;
 
     /// <summary>
-    /// Gets or sets the action to bind to the expand button being pressed.
-    /// </summary>
-    [Parameter]
-    public EventCallback<T> OnExpand { get; set; }
-
-    /// <summary>
     /// Gets or sets the row to highlight (because its information is shown).
     /// </summary>
     [Parameter]
@@ -93,31 +88,19 @@ public partial class UniversalTable<T>
     [Parameter]
     public string? TargetStyle { get; set; }
 
+    /// <summary>
+    /// Gets or sets the action to take when a CSV is requested.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnSaveToCsv { get; set; }
+
     // Filters
 
     /// <summary>
-    /// Gets or sets the barcode filter.
+    /// Gets or sets the dictionary of filters to apply.
     /// </summary>
     [Parameter]
-    public Filter<string> BarcodeFilter { get; set; } = new Filter<string>("Barcode", string.Empty);
-
-    /// <summary>
-    /// Gets or sets the model name filter.
-    /// </summary>
-    [Parameter]
-    public Filter<string> ModelFilter { get; set; } = new Filter<string>("ModelName", string.Empty);
-
-    /// <summary>
-    /// Gets or sets the status filter.
-    /// </summary>
-    [Parameter]
-    public Filter<string> StatusFilter { get; set; } = new Filter<string>("StatusText", string.Empty);
-
-    /// <summary>
-    /// Gets or sets the location filter.
-    /// </summary>
-    [Parameter]
-    public Filter<string> LocationFilter { get; set; } = new Filter<string>("Location", string.Empty);
+    public Dictionary<string, IFilter> Filters { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the action to perform when a filter changes.
@@ -145,7 +128,13 @@ public partial class UniversalTable<T>
     [Parameter]
     public Func<string, string> GetSortIcon { get; set; } = (col) => string.Empty;
 
-    // Printing
+    // Actions
+
+    /// <summary>
+    /// Gets or sets the action to bind to the expand button being pressed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<T> OnExpand { get; set; }
 
     /// <summary>
     /// Gets or sets the action to bind to the edit button being pressed.
@@ -158,12 +147,6 @@ public partial class UniversalTable<T>
     /// </summary>
     [Parameter]
     public EventCallback<T> OnDownload { get; set; }
-
-    /// <summary>
-    /// Gets or sets the action to take when a CSV is requested.
-    /// </summary>
-    [Parameter]
-    public EventCallback OnSaveToCsv { get; set; }
 
     /// <summary>
     /// Gets or sets the action to bind to denial.
@@ -242,10 +225,29 @@ public partial class UniversalTable<T>
     protected override void OnParametersSet()
     {
         // Sync local fields when parameters change from parent
-        this.filterInputs["Barcode"] = this.BarcodeFilter?.Value ?? string.Empty;
-        this.filterInputs["ModelName"] = this.ModelFilter?.Value ?? string.Empty;
-        this.filterInputs["StatusText"] = this.StatusFilter?.Value ?? string.Empty;
-        this.filterInputs["Location"] = this.LocationFilter?.Value ?? string.Empty;
+        foreach (string key in this.Filters.Keys)
+        {
+            this.filterInputs[key] = this.GetFilter<string?>(key).Value ?? string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Helper method to get a strongly-typed filter from the registry.
+    /// </summary>
+    /// <typeparam name="TFilter">The type of the filter value (int, string, DateTime, or bool).</typeparam>
+    /// <param name="key">The key of the filter to retrieve.</param>
+    /// <returns>The filter with appropriate type.</returns>
+    protected Filter<TFilter> GetFilter<TFilter>(string key)
+    {
+        if (this.Filters.TryGetValue(key, out IFilter? filter) && filter is Filter<TFilter> typedFilter)
+        {
+            return typedFilter;
+        }
+
+        // If filter doesn't exist or has wrong type, create a new one
+        var newFilter = new Filter<TFilter>(key, default);
+        this.Filters[key] = newFilter;
+        return newFilter;
     }
 
     /// <summary>
@@ -380,7 +382,7 @@ public partial class UniversalTable<T>
     /// <param name="filter">The filter being changed.</param>
     /// <param name="value">The new value for the filter.</param>
     /// <returns>A Task representing that the DB has been hit and the model is ready to re-render.</returns>
-    private async Task HandleFilterInput(Filter<string> filter, string? value)
+    private async Task HandleFilterInput(Filter<string?> filter, string? value)
     {
         this.filterInputs[filter.Key] = value ?? string.Empty;
 

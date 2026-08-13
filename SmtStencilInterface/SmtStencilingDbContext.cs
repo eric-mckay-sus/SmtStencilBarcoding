@@ -213,7 +213,7 @@ public class Stencil
 /// </summary>
 [Table("EnhancedStencilView")]
 [PrimaryKey(nameof(Barcode))]
-public class EnhancedStencil : IEquatable<EnhancedStencil>
+public sealed class EnhancedStencil : IEquatable<EnhancedStencil>
 {
     /// <summary>
     /// Gets or sets the name of the model to which this stencil belongs.
@@ -295,6 +295,11 @@ public class EnhancedStencil : IEquatable<EnhancedStencil>
     [Column("note")]
     public string? Note { get; set; }
 
+    /// <summary>
+    /// Indicates whether this <see cref="EnhancedStencil"/> is equal to another <see cref="EnhancedStencil"/>.
+    /// </summary>
+    /// <param name="other">The <see cref="EnhancedStencil"/> object with which to compare this one.</param>
+    /// <returns>A value indicating whether this <see cref="EnhancedStencil"/> equals <paramref name="other"/>.</returns>
     public bool Equals(EnhancedStencil? other)
     {
         if (other is null)
@@ -305,8 +310,17 @@ public class EnhancedStencil : IEquatable<EnhancedStencil>
         return this.Barcode == other.Barcode;
     }
 
+    /// <summary>
+    /// Indicates whether this <see cref="EnhancedStencil"/> is equal to <paramref name="obj"/>.
+    /// </summary>
+    /// <param name="obj">The object with which to compare this <see cref="EnhancedStencil"/>.</param>
+    /// <returns>A value indicating whether this <see cref="EnhancedStencil"/> equals <paramref name="obj"/>.</returns>
     public override bool Equals(object? obj) => this.Equals(obj as EnhancedStencil);
 
+    /// <summary>
+    /// Gets the hash code for this <see cref="EnhancedStencil"/> (the hash of its barcode).
+    /// </summary>
+    /// <returns>The hash code for this <see cref="EnhancedStencil"/>.</returns>
     public override int GetHashCode() => this.Barcode.GetHashCode();
 }
 
@@ -359,7 +373,7 @@ public class StencilStatusChange
     /// Gets or sets the associate ID who performed the status change.
     /// </summary>
     [Column("associateId")]
-    public string? AssociateId { get; set; }
+    public int AssociateId { get; set; }
 
     /// <summary>
     /// Gets or sets the timestamp when the status change occurred.
@@ -389,6 +403,18 @@ public class EnhancedStencilStatusChange
     public string? Barcode { get; set; }
 
     /// <summary>
+    /// Gets or sets the model the affected stencil belongs to.
+    /// </summary>
+    [Column("modelName")]
+    public string? Model { get; set; }
+
+    /// <summary>
+    /// Gets or sets the panel number the affected stencil belongs to.
+    /// </summary>
+    [Column("panelNum")]
+    public string? PanelNum { get; set; }
+
+    /// <summary>
     /// Gets or sets the state the stencil changed from.
     /// </summary>
     [Column("fromStatusText")]
@@ -404,7 +430,7 @@ public class EnhancedStencilStatusChange
     /// Gets or sets the associate ID who performed the status change.
     /// </summary>
     [Column("associateId")]
-    public string? AssociateId { get; set; }
+    public int AssociateId { get; set; }
 
     /// <summary>
     /// Gets or sets the timestamp when the status change occurred.
