@@ -2,8 +2,6 @@
 // Copyright (c) 2026 Stanley Electric US Co. Inc. Licensed under the MIT License.
 // </copyright>
 
-using Microsoft.AspNetCore.Components;
-
 namespace SmtStencilInterface.Components.Pages;
 
 /// <summary>
@@ -23,16 +21,6 @@ public partial class StencilHistory : TableManager<StencilStatusChange, Enhanced
     /// Gets the location filter.
     /// </summary>
     private Filter<string?> PanelNumFilter => this.GetFilter<string?>("PanelNum");
-
-    /// <summary>
-    /// Gets the filter for stencils updated after a target date.
-    /// </summary>
-    private Filter<DateTime?> UpdatedAfterFilter => this.GetFilter<DateTime?>("UpdatedAfter");
-
-    /// <summary>
-    /// Gets the filter for stencils updated before a target date.
-    /// </summary>
-    private Filter<DateTime?> UpdatedBeforeFilter => this.GetFilter<DateTime?>("UpdatedBefore");
 
     /// <summary>
     /// When this page loads, set the default load.
@@ -87,5 +75,4 @@ public partial class StencilHistory : TableManager<StencilStatusChange, Enhanced
         this.updatedBefore = null;
         await this.RefreshData();
     }
-
 }

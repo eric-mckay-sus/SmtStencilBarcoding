@@ -6,8 +6,10 @@ namespace SmtStencilInterface;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.JSInterop;
 using ToastService = BlazorBootstrap.ToastService;
 using System.Linq.Dynamic.Core;
+using System.Reflection;
 
 using InterProcessIO;
 
@@ -48,6 +50,12 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// </summary>
     [Inject]
     public BlazorReporter Reporter { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the JS handler to refocus the filter after debounce.
+    /// </summary>
+    [Inject]
+    public IJSRuntime JS { get; set; } = default!;
 
     /// <summary>
     /// Gets the data from the DB table with rows of type <typeparamref name="TRead" /> (there should only be one).
@@ -300,6 +308,50 @@ public class TableManager<TWrite, TRead> : TableManagerBase
             await this.RefreshData();
             this.StateHasChanged();
         }
+    }
+
+    /// <summary>
+    /// Detects the table, then saves the results of the query on that table to a CSV
+    /// Uses JS runtime to download directly to browser Downloads location.
+    /// </summary>
+    /// <returns>A Task representing that the browser download has started.</returns>
+    public async Task SaveToCSV()
+    {
+        Type targetType = typeof(TRead);
+        PropertyInfo[] properties = targetType.GetProperties();
+        var csvBuilder = new System.Text.StringBuilder();
+
+        // Header
+        csvBuilder.AppendLine(string.Join(",", properties.Select(p => p.Name)));
+
+        // Re run the current query with the current filters and sorts
+        using SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync();
+        IQueryable<TRead> query = context.Set<TRead>().AsNoTracking();
+        query = this.ApplyFilters(query);
+        query = this.ApplySorting(query);
+        List<TRead> allData = await query.ToListAsync();
+
+        // Loop through each row, parse, then pass to the CSV builder
+        foreach (TRead item in allData)
+        {
+            IEnumerable<string> values = properties.Select(p =>
+            {
+                string val = p.GetValue(item)?.ToString() ?? string.Empty;
+
+                // CSV escaping: wrap in quotes if contains comma, newline, or quotes
+                if (val.Contains(',') || val.Contains('"') || val.Contains('\n') || val.Contains('\r'))
+                {
+                    val = $"\"{val.Replace("\"", "\"\"")}\"";
+                }
+
+                return val;
+            });
+            csvBuilder.AppendLine(string.Join(",", values));
+        }
+
+        // Call JS Runtime to perform the download
+        string fileName = $"{targetType.Name}s_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+        await this.JS.InvokeVoidAsync("downloadCsvFromStream", fileName, csvBuilder.ToString());
     }
 
     /// <summary>

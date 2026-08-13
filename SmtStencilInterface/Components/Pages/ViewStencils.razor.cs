@@ -4,22 +4,14 @@
 
 namespace SmtStencilInterface.Components.Pages;
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 /// <summary>
 /// Code-behind for the model creation page.
 /// </summary>
 public partial class ViewStencils : TableManager<Stencil, EnhancedStencil>
 {
-    /// <summary>
-    /// Gets or sets the JS handler to refocus the filter after debounce.
-    /// </summary>
-    [Inject]
-    public IJSRuntime JS { get; set; } = default!;
-
     /// <summary>
     /// Gets the message to show when there are no stencils in <see cref="TableManager{TWrite, TRead}.DataView"/>.
     /// </summary>
@@ -83,48 +75,5 @@ public partial class ViewStencils : TableManager<Stencil, EnhancedStencil>
 
         string fileName = $"{enhancedStencil.Model}_{panelNum}_{enhancedStencil.JobNum}.gbx";
         await this.JS.InvokeVoidAsync("downloadGbxFromStream", fileName, enhancedStencil.Checkplot);
-    }
-
-    /// <summary>
-    /// Detects the table, then saves the results of the query on that table to a CSV
-    /// Uses JS runtime to download directly to browser Downloads location.
-    /// </summary>
-    /// <returns>A Task representing that the browser download has started.</returns>
-    private async Task SaveToCSV()
-    {
-        PropertyInfo[] properties = typeof(EnhancedStencil).GetProperties();
-        var csvBuilder = new System.Text.StringBuilder();
-
-        // Header
-        csvBuilder.AppendLine(string.Join(",", properties.Select(p => p.Name)));
-
-        // Re run the current query with the current filters and sorts
-        using SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync();
-        IQueryable<EnhancedStencil> query = context.Set<EnhancedStencil>().AsNoTracking();
-        query = this.ApplyFilters(query);
-        query = this.ApplySorting(query);
-        List<EnhancedStencil> allData = await query.ToListAsync();
-
-        // Loop through each row, parse, then pass to the CSV builder
-        foreach (EnhancedStencil item in allData)
-        {
-            IEnumerable<string> values = properties.Select(p =>
-            {
-                string val = p.GetValue(item)?.ToString() ?? string.Empty;
-
-                // CSV escaping: wrap in quotes if contains comma, newline, or quotes
-                if (val.Contains(',') || val.Contains('"') || val.Contains('\n') || val.Contains('\r'))
-                {
-                    val = $"\"{val.Replace("\"", "\"\"")}\"";
-                }
-
-                return val;
-            });
-            csvBuilder.AppendLine(string.Join(",", values));
-        }
-
-        // Call JS Runtime to perform the download
-        string fileName = $"Stencils_{DateTime.Now:yyyyMMdd_HHmm}.csv";
-        await this.JS.InvokeVoidAsync("downloadCsvFromStream", fileName, csvBuilder.ToString());
     }
 }

@@ -25,13 +25,10 @@
                     <span>Clear Filters</span>
                 </Button>
             }
-            @if(OnSaveToCsv.HasDelegate)
-            {
-                <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
-                    <Icon Name="IconName.Download" />
-                    <span>Save to CSV</span>
-                </Button>
-            }
+            <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
+                <Icon Name="IconName.Download" />
+                <span>Save to CSV</span>
+            </Button>
         </div>
         <nav>
             <ul class="pagination mt-3">
