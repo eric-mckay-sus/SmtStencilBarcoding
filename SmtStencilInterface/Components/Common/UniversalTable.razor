@@ -19,7 +19,19 @@
                     <option value="500" selected="@(PageSize == 500)">500</option>
                 </select>
             </div>
-            <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" Outline="true" @onclick="ClearFilters">Clear Filters</Button>
+            @if (ShowFilterClear){
+                <Button Color="ButtonColor.Secondary" Size="ButtonSize.Small" Outline="true" @onclick="ClearFilters">
+                    <Icon Name="IconName.XCircle" />
+                    <span>Clear Filters</span>
+                </Button>
+            }
+            @if(OnSaveToCsv.HasDelegate)
+            {
+                <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
+                    <Icon Name="IconName.Download" />
+                    <span>Save to CSV</span>
+                </Button>
+            }
         </div>
         <nav>
             <ul class="pagination mt-3">
@@ -89,6 +101,34 @@ else if (Items != null)
                                         @oninput='e => _ = HandleFilterInput(ModelFilter, e.Value?.ToString())'' />
                                 </div>
                             }
+
+                            @if (prop.Name == "StatusText" && StatusFilter != null)
+                            {
+                                <div class="centered-container">
+                                    <input class="form-control form-control-sm mt-1"
+                                        style="width: 10rem;"
+                                        id="statustext-filter"
+                                        placeholder="Filter status..."
+                                        value='@filterInputs["StatusText"]'
+                                        autocomplete="off"
+                                        @onclick:stopPropagation
+                                        @oninput='e => _ = HandleFilterInput(StatusFilter, e.Value?.ToString())' />
+                                </div>
+                            }
+
+                            @if (prop.Name == "Location" && LocationFilter != null)
+                            {
+                                <div class="centered-container">
+                                    <input class="form-control form-control-sm mt-1"
+                                        style="width: 10rem;"
+                                        id="location-filter"
+                                        placeholder="Filter location..."
+                                        value='@filterInputs["Location"]'
+                                        autocomplete="off"
+                                        @onclick:stopPropagation
+                                        @oninput='e => _ = HandleFilterInput(LocationFilter, e.Value?.ToString())'' />
+                                </div>
+                            }
                         </td>
                     }
                     @if (ShowActions)
@@ -110,7 +150,7 @@ else if (Items != null)
                         </th>
                     }
                         @if (this.ShowActions){
-                        <th>Actions</th> @* For the expand, print, approve, deny, and remake buttons *@
+                        <th>Actions</th> @* For the expand, edit, download, deny, and remake buttons *@
                     }
                 </tr>
             </thead>
@@ -147,12 +187,12 @@ else if (Items != null)
                                         <Icon Name="IconName.Pencil" Size="IconSize.x4" />
                                     </button>
                                 }
-                                @if (OnApprove.HasDelegate){
+                                @if (OnDownload.HasDelegate && ShouldShowDownloadButton(item)){
                                     <button class="btn btn-link btn-action p-0 me-2"
-                                            @onclick="() => OnApprove.InvokeAsync(item)"
+                                            @onclick="() => OnDownload.InvokeAsync(item)"
                                             @onclick:stopPropagation
-                                            title="Approve">
-                                        <Icon Name="IconName.CheckLg" Size="IconSize.x4" Color="IconColor.Success" />
+                                            title="Download Checkplot">
+                                        <Icon Name="IconName.Download" Size="IconSize.x4" />
                                     </button>
                                 }
                                 @if (OnRemake.HasDelegate)
