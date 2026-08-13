@@ -25,13 +25,10 @@
                     <span>Clear Filters</span>
                 </Button>
             }
-            @if(OnSaveToCsv.HasDelegate)
-            {
-                <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
-                    <Icon Name="IconName.Download" />
-                    <span>Save to CSV</span>
-                </Button>
-            }
+            <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
+                <Icon Name="IconName.Download" />
+                <span>Save to CSV</span>
+            </Button>
         </div>
         <nav>
             <ul class="pagination mt-3">
@@ -74,60 +71,22 @@ else if (Items != null)
                     @foreach (var prop in GetVisibleProperties())
                     {
                         <td>
-                            @if (prop.Name == "Barcode" && BarcodeFilter != null)
+                            @foreach(string key in Filters.Keys)
                             {
-                                <div class="centered-container">
-                                    <input class="form-control form-control-sm mt-1"
-                                        style="width: 10rem;"
-                                        id="barcode-filter"
-                                        placeholder="Filter barcode..."
-                                        value='@filterInputs["Barcode"]'
-                                        autocomplete="off"
-                                        @onclick:stopPropagation
-                                        @oninput='e => _ = HandleFilterInput(BarcodeFilter, e.Value?.ToString())' />
-                                </div>
-                            }
-
-                            @if (prop.Name == "Model" && ModelFilter != null)
-                            {
-                                <div class="centered-container">
-                                    <input class="form-control form-control-sm mt-1"
-                                        style="width: 10rem;"
-                                        id="model-filter"
-                                        placeholder="Filter model..."
-                                        value='@filterInputs["ModelName"]'
-                                        autocomplete="off"
-                                        @onclick:stopPropagation
-                                        @oninput='e => _ = HandleFilterInput(ModelFilter, e.Value?.ToString())'' />
-                                </div>
-                            }
-
-                            @if (prop.Name == "StatusText" && StatusFilter != null)
-                            {
-                                <div class="centered-container">
-                                    <input class="form-control form-control-sm mt-1"
-                                        style="width: 10rem;"
-                                        id="statustext-filter"
-                                        placeholder="Filter status..."
-                                        value='@filterInputs["StatusText"]'
-                                        autocomplete="off"
-                                        @onclick:stopPropagation
-                                        @oninput='e => _ = HandleFilterInput(StatusFilter, e.Value?.ToString())' />
-                                </div>
-                            }
-
-                            @if (prop.Name == "Location" && LocationFilter != null)
-                            {
-                                <div class="centered-container">
-                                    <input class="form-control form-control-sm mt-1"
-                                        style="width: 10rem;"
-                                        id="location-filter"
-                                        placeholder="Filter location..."
-                                        value='@filterInputs["Location"]'
-                                        autocomplete="off"
-                                        @onclick:stopPropagation
-                                        @oninput='e => _ = HandleFilterInput(LocationFilter, e.Value?.ToString())'' />
-                                </div>
+                                string lowerKey = key.ToLower();
+                                @if (prop.Name == key && GetFilter<string>(key) != null)
+                                {
+                                    <div class="centered-container">
+                                        <input class="form-control form-control-sm mt-1"
+                                            style="width: 10rem;"
+                                            id='@($"{lowerKey}-filter")'
+                                            placeholder="@($"Filter {lowerKey}...")"
+                                            value='@filterInputs[key]'
+                                            autocomplete="off"
+                                            @onclick:stopPropagation
+                                            @oninput='e => _ = HandleFilterInput(GetFilter<string?>(key), e.Value?.ToString())' />
+                                    </div>
+                                }
                             }
                         </td>
                     }

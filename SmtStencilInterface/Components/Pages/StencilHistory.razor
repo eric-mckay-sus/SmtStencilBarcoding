@@ -3,11 +3,28 @@
 
 <PageTitle>Stencil History</PageTitle>
 
-<h1>State history table with options</h1>
+<h2>Stencil Status Update History</h2>
 
-<h1>Date, model, barcode, and panel number filters</h1>
-
-<h1>Save to CSV option</h1>
+<div class="row g-3 pt-2 mb-2">
+    <span class="col-1" />
+    <div class="col-4">
+        <label class="form-label">Updated After</label>
+        <input type="datetime-local" class="form-control" @bind="updatedAfter" />
+    </div>
+    <span class="col-2 centered-container mx-3" >
+        <Button Size="ButtonSize.Small" Color="ButtonColor.Secondary" Outline="true" Class="me-2" @onclick="ClearDateFilters">
+            Clear Date Filters
+        </Button>
+        <Icon Name="IconName.ClockFill" Color="IconColor.Info" Style="font-size: 36px" />
+        <Button Size="ButtonSize.Small" Color="ButtonColor.Success" Class="ms-2" @onclick="() => RefreshData()">
+            Apply Date Filters
+        </Button>
+    </span>
+    <div class="col-4">
+        <label class="form-label">Updated Before</label>
+        <input type="datetime-local" class="form-control" @bind="updatedBefore" />
+    </div>
+</div>
 
 <TablePresenter TWrite="StencilStatusChange"
                 TRead="EnhancedStencilStatusChange"

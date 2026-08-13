@@ -6,8 +6,10 @@ namespace SmtStencilInterface;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.JSInterop;
 using ToastService = BlazorBootstrap.ToastService;
 using System.Linq.Dynamic.Core;
+using System.Reflection;
 
 using InterProcessIO;
 
@@ -50,6 +52,12 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     public BlazorReporter Reporter { get; set; } = default!;
 
     /// <summary>
+    /// Gets or sets the JS handler to refocus the filter after debounce.
+    /// </summary>
+    [Inject]
+    public IJSRuntime JS { get; set; } = default!;
+
+    /// <summary>
     /// Gets the data from the DB table with rows of type <typeparamref name="TRead" /> (there should only be one).
     /// </summary>
     public List<TRead> DataView { get; private set; } = [];
@@ -85,29 +93,24 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     public int TotalPages => this.PageSize > 0 ? (int)Math.Ceiling((double)this.TotalCount / this.PageSize) : 1;
 
     /// <summary>
-    /// Gets or sets the optional barcode filter.
+    /// Gets or sets the filter registry to hold all active filters.
     /// </summary>
-    public Filter<string> BarcodeFilter { get; set; } = new Filter<string>("Barcode", string.Empty);
-
-    /// <summary>
-    /// Gets or sets the optional model name filter.
-    /// </summary>
-    public Filter<string> ModelFilter { get; set; } = new Filter<string>("Model", string.Empty);
-
-    /// <summary>
-    /// Gets or sets the optional status filter.
-    /// </summary>
-    public Filter<string> StatusFilter { get; set; } = new Filter<string>("StatusText", string.Empty);
-
-    /// <summary>
-    /// Gets or sets the optional location filter.
-    /// </summary>
-    public Filter<string> LocationFilter { get; set; } = new Filter<string>("Location", string.Empty);
+    public Dictionary<string, IFilter> Filters { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the error message for uniqueness constraint, if applicable.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets the optional barcode filter.
+    /// </summary>
+    protected Filter<string?> BarcodeFilter => this.GetFilter<string?>("Barcode");
+
+    /// <summary>
+    /// Gets the optional model name filter.
+    /// </summary>
+    protected Filter<string?> ModelFilter => this.GetFilter<string?>("Model");
 
     /// <summary>
     /// Gets the list of sorts to be applied to the query.
@@ -143,6 +146,12 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// <returns>The task for the load operation.</returns>
     public virtual async Task RefreshData(bool keepPage = false)
     {
+        Console.WriteLine("Filter dump");
+        foreach (IFilter filter in this.Filters.Values)
+        {
+            Console.WriteLine($"{filter.Key}: {filter.GetValue()}");
+        }
+
         if (!keepPage)
         {
             this.CurrentPage = 1;
@@ -272,24 +281,6 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     }
 
     /// <summary>
-    /// Clears filters and reloads the table.
-    /// </summary>
-    /// <returns>A Task representing that the filters have been cleared.</returns>
-    public async Task ClearAllFilters()
-    {
-        if (this.ModelFilter.IsActive || this.BarcodeFilter.IsActive || this.StatusFilter.IsActive || this.LocationFilter.IsActive)
-        {
-            this.BarcodeFilter.Reset();
-            this.ModelFilter.Reset();
-            this.StatusFilter.Reset();
-            this.LocationFilter.Reset();
-
-            await this.RefreshData();
-            this.StateHasChanged();
-        }
-    }
-
-    /// <summary>
     /// Clears the in-memory table state.
     /// </summary>
     /// <returns>A Task representing that the table has been totally reset.</returns>
@@ -299,6 +290,87 @@ public class TableManager<TWrite, TRead> : TableManagerBase
         await this.ClearAllFilters();
         this.TotalCount = 0;
         this.CurrentPage = 1;
+    }
+
+    /// <summary>
+    /// Clears all filters and reloads the data.
+    /// </summary>
+    /// <returns>A Task representing that the filters have been cleared.</returns>
+    public async Task ClearAllFilters()
+    {
+        if (this.Filters.Values.Any(f => f.IsActive))
+        {
+            foreach (IFilter filter in this.Filters.Values)
+            {
+                filter.Reset();
+            }
+
+            await this.RefreshData();
+            this.StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Detects the table, then saves the results of the query on that table to a CSV
+    /// Uses JS runtime to download directly to browser Downloads location.
+    /// </summary>
+    /// <returns>A Task representing that the browser download has started.</returns>
+    public async Task SaveToCSV()
+    {
+        Type targetType = typeof(TRead);
+        PropertyInfo[] properties = targetType.GetProperties();
+        var csvBuilder = new System.Text.StringBuilder();
+
+        // Header
+        csvBuilder.AppendLine(string.Join(",", properties.Select(p => p.Name)));
+
+        // Re run the current query with the current filters and sorts
+        using SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync();
+        IQueryable<TRead> query = context.Set<TRead>().AsNoTracking();
+        query = this.ApplyFilters(query);
+        query = this.ApplySorting(query);
+        List<TRead> allData = await query.ToListAsync();
+
+        // Loop through each row, parse, then pass to the CSV builder
+        foreach (TRead item in allData)
+        {
+            IEnumerable<string> values = properties.Select(p =>
+            {
+                string val = p.GetValue(item)?.ToString() ?? string.Empty;
+
+                // CSV escaping: wrap in quotes if contains comma, newline, or quotes
+                if (val.Contains(',') || val.Contains('"') || val.Contains('\n') || val.Contains('\r'))
+                {
+                    val = $"\"{val.Replace("\"", "\"\"")}\"";
+                }
+
+                return val;
+            });
+            csvBuilder.AppendLine(string.Join(",", values));
+        }
+
+        // Call JS Runtime to perform the download
+        string fileName = $"{targetType.Name}s_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+        await this.JS.InvokeVoidAsync("downloadCsvFromStream", fileName, csvBuilder.ToString());
+    }
+
+    /// <summary>
+    /// Helper method to get a strongly-typed filter from the registry.
+    /// </summary>
+    /// <typeparam name="T">The type of the filter value (int, string, DateTime, or bool).</typeparam>
+    /// <param name="key">The key of the filter to retrieve.</param>
+    /// <returns>The filter with appropriate type.</returns>
+    protected Filter<T> GetFilter<T>(string key)
+    {
+        if (this.Filters.TryGetValue(key, out IFilter? filter) && filter is Filter<T> typedFilter)
+        {
+            return typedFilter;
+        }
+
+        // If filter doesn't exist or has wrong type, create a new one
+        var newFilter = new Filter<T>(key, default);
+        this.Filters[key] = newFilter;
+        return newFilter;
     }
 
     /// <summary>
@@ -421,6 +493,19 @@ public class TableManager<TWrite, TRead> : TableManagerBase
         }
 
         return query;
+    }
+
+    /// <summary>
+    /// When a <see cref="TableManager{TWrite, TRead}"/>  is initialized, load the filter registry.
+    /// </summary>
+    protected override void OnInitialized() => this.InitializeFilters();
+
+    /// <summary>
+    /// Hook for children to initialize filters by adding them to the registry.
+    /// The generic <see cref="TableManager{TWrite, TRead}"/> has no filters, so return immediately.
+    /// </summary>
+    protected virtual void InitializeFilters()
+    {
     }
 
     /// <summary>

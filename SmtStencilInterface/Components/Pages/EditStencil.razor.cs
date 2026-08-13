@@ -22,6 +22,11 @@ public partial class EditStencil : TableManager<Stencil, EnhancedStencil>
     private EnhancedStencil? target;
 
     /// <summary>
+    /// Gets the message to show when there are no stencils in <see cref="TableManager{TWrite, TRead}.DataView"/>.
+    /// </summary>
+    public override string EmptyMessage => "No stencils found matching these criteria.";
+
+    /// <summary>
     /// When this page loads, set the default load.
     /// </summary>
     /// <returns>A Task representing that the page has loaded.</returns>
@@ -48,24 +53,23 @@ public partial class EditStencil : TableManager<Stencil, EnhancedStencil>
     }
 
     /// <summary>
-    /// Applies the model filter if it is active.
+    /// Populates <see cref="TableManager{TWrite, TRead}"/>'s filter registry with the filters applicable to the stencil editing page.
+    /// </summary>
+    protected override void InitializeFilters()
+    {
+        this.Filters["Model"] = new Filter<string>("Model", string.Empty);
+        this.Filters["Barcode"] = new Filter<string>("Barcode", string.Empty);
+    }
+
+    /// <summary>
+    /// Applies the model/barcode filters if they are active.
     /// </summary>
     /// <param name="query"> <inheritdoc path="/param[@name='query']" /></param>
     /// <returns><inheritdoc/></returns>
-    protected override IQueryable<EnhancedStencil> ApplyFilters(IQueryable<EnhancedStencil> query)
-    {
-        if (this.ModelFilter is { IsActive: true, Value: not null })
-        {
-            query = query.Where(x => x.Model.Contains(this.ModelFilter.Value));
-        }
-
-        if (this.BarcodeFilter is { IsActive: true, Value: not null })
-        {
-            query = query.Where(x => x.Barcode.Contains(this.BarcodeFilter.Value));
-        }
-
-        return query;
-    }
+    protected override IQueryable<EnhancedStencil> ApplyFilters(IQueryable<EnhancedStencil> query) =>
+        query
+            .ApplyFilterIfActive(this.ModelFilter, x => x.Model.Contains(this.ModelFilter.Value!))
+            .ApplyFilterIfActive(this.BarcodeFilter, x => x.Barcode.Contains(this.BarcodeFilter.Value!));
 
     /// <summary>
     /// <inheritdoc/>
