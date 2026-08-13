@@ -90,6 +90,11 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     public Dictionary<string, IFilter> Filters { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the error message for uniqueness constraint, if applicable.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
     /// Gets the optional barcode filter.
     /// </summary>
     protected Filter<string?> BarcodeFilter => this.GetFilter<string?>("Barcode");
@@ -98,11 +103,6 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// Gets the optional model name filter.
     /// </summary>
     protected Filter<string?> ModelFilter => this.GetFilter<string?>("Model");
-
-    /// <summary>
-    /// Gets or sets the error message for uniqueness constraint, if applicable.
-    /// </summary>
-    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets the list of sorts to be applied to the query.
@@ -138,6 +138,12 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// <returns>The task for the load operation.</returns>
     public virtual async Task RefreshData(bool keepPage = false)
     {
+        Console.WriteLine("Filter dump");
+        foreach (IFilter filter in this.Filters.Values)
+        {
+            Console.WriteLine($"{filter.Key}: {filter.GetValue()}");
+        }
+
         if (!keepPage)
         {
             this.CurrentPage = 1;

@@ -141,5 +141,4 @@ public static class QueryFilterExtensions
         Filter<TVal?> filter,
         Expression<Func<T, bool>> predicate)
     => filter.IsActive ? query.Where(predicate) : query;
-
 }
