@@ -4,7 +4,7 @@
     <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
         <div class="expandable-content">
             <div class="form-card mb-3">
-                <EditForm Model="@EditItem" OnValidSubmit="@(async () => await HandleValidSubmit(isInsert: false))">
+                <EditForm Model="@formModel" OnValidSubmit="@(async () => await HandleValidSubmit(isInsert: false))">
                     <DataAnnotationsValidator />
                     <div class="form-container">
                         <h5 class="form-title">Stencil Details</h5>
@@ -29,22 +29,24 @@
                             </div>
                             <div class="col-2">
                                 <label for="status" class="form-label">New Status</label>
-                                <select id="status" class="form-select" @bind="@newStatus" @bind:after="ResolveStatus">
+                                <select id="status" class="form-select" @bind="@formModel.NewStatus" @bind:after="ResolveStatus">
                                     <option value="">--Select a new status--</option>
                                     @foreach(string s in availableStatuses)
                                     {
                                         <option value="@s">@s</option>
                                     }
                                 </select>
-                                <ValidationMessage For="@(() => EditItem.StatusCode)" />
+                                <ValidationMessage For="@(() => formModel.NewStatus)" />
                             </div>
                             <div class="col-1">
-                                <label for="note" class="form-label">Associate #:</label>
-                                <InputNumber id="note" @bind-Value="associateNum" class="form-control" autocomplete="off" placeholder="Enter associate number..." />
+                                <label for="associateNum" class="form-label">Associate #:</label>
+                                <input type="number" id="associateNum" @bind="formModel.AssociateNum" class="form-control" max="999999" autocomplete="off" placeholder="Enter associate number..." />
+                                <ValidationMessage For="@(() => formModel.AssociateNum)" />
                             </div>
                             <div class="col-3">
                                 <label for="note" class="form-label">Note:</label>
-                                <InputText id="note" @bind-Value="note" class="form-control" autocomplete="off" placeholder="Add a short note explaining the status change (optional)" />
+                                <InputText id="note" @bind-Value="formModel.Note" class="form-control" autocomplete="off" placeholder="Add a short note explaining the status change (optional)" />
+                                <ValidationMessage For="@(() => formModel.Note)" />
                             </div>
                         </div>
 

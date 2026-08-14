@@ -6,6 +6,7 @@ namespace SmtStencilInterface.Components.Pages;
 
 using BlazorBootstrap;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 /// <summary>
 /// Code-behind for the model creation page.
@@ -102,6 +103,48 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
         this.targetModel = null;
         this.targetStatus = null;
         this.dummyThickness = null;
+    }
+
+    protected override async Task HandleValidSubmit(bool isInsert = false)
+    {
+        this.ErrorMessage = null;
+        using SmtStencilingDbContext context = this.DbFactory.CreateDbContext();
+        using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
+        try
+        {
+            if (EditItem.Barcode is not null)
+            {
+                await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Stencils ON");
+            }
+
+            if (isInsert)
+            {
+                context.Set<Stencil>().Add(this.EditItem);
+            }
+            else
+            {
+                context.Set<Stencil>().Update(this.EditItem);
+            }
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            this.InsertPreRefreshSequence();
+            await this.RefreshData();
+            this.InsertPostRefreshSequence();
+            this.CloseForm();
+        }
+        catch (DbUpdateException)
+        {
+            // Fallback for race conditions (form validation handled elsewhere)
+            this.ErrorMessage = "A database error occurred. The data may have changed since you opened the form.";
+            await transaction.RollbackAsync();
+        }
+        catch (Exception)
+        {
+            this.ErrorMessage = "An unexpected error occurred. Please try again.";
+            await transaction.RollbackAsync();
+        }
     }
 
     private async Task ResolveModel()

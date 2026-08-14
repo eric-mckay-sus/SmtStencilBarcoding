@@ -30,7 +30,7 @@
             <label for="fileInput" class="upload-button">
                 <i class="bi bi-cloud-arrow-up" style="font-size: 26px"></i> Choose Checkplot File (GBX)
             </label>
-            <InputFile id="fileInput" OnChange="HandleFileSelected" accept=".gbx" class="hidden-input-overlay"
+            <InputFile id="fileInput" OnChange="HandleFileSelected" accept=".gbx, .gbr" class="hidden-input-overlay"
                 @ondragenter="HandleDragEnter"
                 @ondragleave="HandleDragLeave"
                 @ondragover="HandleDragOver"

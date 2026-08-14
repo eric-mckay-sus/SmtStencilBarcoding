@@ -4,6 +4,7 @@
 
 namespace SmtStencilInterface.Components.Pages;
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -15,11 +16,7 @@ public partial class UpdateStencilState : TableManager<Stencil, EnhancedStencil>
 {
     private bool blazorStop = true;
 
-    private int? associateNum;
-
-    private string? note;
-
-    private string? newStatus;
+    private StencilStatusUpdateForm formModel = new ();
 
     private IList<string> availableStatuses = [];
 
@@ -135,11 +132,7 @@ public partial class UpdateStencilState : TableManager<Stencil, EnhancedStencil>
     {
         base.CloseForm();
         this.Target = null;
-        this.newStatus = null;
-        this.note = null;
-        this.associateNum = null;
-        this.IsFormVisible = false;
-        this.EditItem = new ();
+        this.formModel = new ();
     }
 
     /// <summary>
@@ -158,8 +151,8 @@ public partial class UpdateStencilState : TableManager<Stencil, EnhancedStencil>
             await context.Database.ExecuteSqlRawAsync(
                 "EXEC sp_set_session_context @key=N'ModifiedByAssociateId', @value={0}; " +
                 "EXEC sp_set_session_context @key=N'StatusChangeNote', @value={1};",
-                this.associateNum ?? (object)DBNull.Value,
-                string.IsNullOrWhiteSpace(this.note) ? DBNull.Value : this.note);
+                this.formModel.AssociateNum ?? (object)DBNull.Value,
+                string.IsNullOrWhiteSpace(this.formModel.Note) ? DBNull.Value : this.formModel.Note);
 
             // Perform standard update/insert flow
             context.Set<Stencil>().Update(this.EditItem);
@@ -204,7 +197,7 @@ public partial class UpdateStencilState : TableManager<Stencil, EnhancedStencil>
         using SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync();
         this.EditItem.StatusCode = await context.StatusCodes
                                                 .AsNoTracking()
-                                                .Where(sc => sc.Status == this.newStatus)
+                                                .Where(sc => sc.Status == this.formModel.NewStatus)
                                                 .Select(sc => sc.Code)
                                                 .FirstOrDefaultAsync();
     }
@@ -227,4 +220,29 @@ public partial class UpdateStencilState : TableManager<Stencil, EnhancedStencil>
             this.EditItem = context.Stencils.FirstOrDefault(s => s.Barcode == barcodeNum);
         }
     }
+}
+
+/// <summary>
+/// Container for the data in the status update form.
+/// </summary>
+public class StencilStatusUpdateForm
+{
+    /// <summary>
+    /// Gets or sets the user's associate number.
+    /// </summary>
+    [Required(ErrorMessage = "Associate number is required.")]
+    [ValidateAssociateExists]
+    public int? AssociateNum { get; set; }
+
+    /// <summary>
+    /// Gets or sets the note to attach in the historical log.
+    /// </summary>
+    [MaxLength(50, ErrorMessage = "Note must be no longer than 50 characters.")]
+    public string? Note { get; set; }
+
+    /// <summary>
+    /// Gets or sets the new stencil status.
+    /// </summary>
+    [Required(ErrorMessage = "New status is required.")]
+    public string? NewStatus { get; set; }
 }

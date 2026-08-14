@@ -130,15 +130,19 @@ public class Stencil
     /// <summary>
     /// Gets or sets the stencil barcode.
     /// </summary>
+    [Key]
     [Column("barcode")]
-    public short Barcode { get; set; }
+    [Required(ErrorMessage = "Barcode is required.")]
+    [Range(1, short.MaxValue, ErrorMessage = "Barcode must be between 1 and 32767.")]
+    [UniqueBarcode]
+    public short? Barcode { get; set; }
 
     /// <summary>
     /// Gets or sets the maker of the stencil.
     /// </summary>
     [Column("maker")]
     [Required(ErrorMessage = "Stencil maker is required.")]
-    [MaxLength(25, ErrorMessage = "Stencil maker must be no more than 25 characters.")]
+    [StringLength(25, MinimumLength = 1, ErrorMessage = "Stencil maker must be between 1 and 25 characters.")]
     public string? Maker { get; set; }
 
     /// <summary>
@@ -146,7 +150,7 @@ public class Stencil
     /// </summary>
     [Column("jobNum")]
     [Required(ErrorMessage = "Job number is required.")]
-    [MaxLength(20, ErrorMessage = "Panel number must be no more than 20 characters.")]
+    [StringLength(20, MinimumLength = 1, ErrorMessage = "Job number must be between 1 and 20 characters.")]
     public string? JobNum { get; set; }
 
     /// <summary>
@@ -161,6 +165,7 @@ public class Stencil
     /// </summary>
     [Column("cycleCount")]
     [Required(ErrorMessage = "Cycle count is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Cycle count must be a positive integer.")]
     public int? CycleCount { get; set; }
 
     /// <summary>
@@ -175,6 +180,7 @@ public class Stencil
     /// </summary>
     [Column("thickness")]
     [Required(ErrorMessage = "Stencil thickness is required.")]
+    [Range(1, byte.MaxValue, ErrorMessage = "Stencil thickness must be between 1 and 255.")]
     public byte? Thickness { get; set; }
 
     /// <summary>
@@ -182,6 +188,7 @@ public class Stencil
     /// </summary>
     [Column("statusCode")]
     [Required(ErrorMessage = "Stencil status is required.")]
+    [Range(1, byte.MaxValue, ErrorMessage = "Stencil status code must be between 1 and 255.")]
     public byte? StatusCode { get; set; }
 
     /// <summary>
@@ -189,7 +196,8 @@ public class Stencil
     /// </summary>
     [Column("location")]
     [Required(ErrorMessage = "Stencil location is required.")]
-    [MaxLength(8, ErrorMessage = "Line name must be no longer than 8 characters (try truncating)")]
+    [StringLength(8, MinimumLength = 1, ErrorMessage = "Location must be between 1 and 8 characters.")]
+    [ValidateLocation]
     public string? Location { get; set; }
 
     /// <summary>
@@ -197,6 +205,8 @@ public class Stencil
     /// </summary>
     [NotDisplayed]
     [Required(ErrorMessage = "Model name is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Model ID must be a positive integer.")]
+    [ValidateModelName]
     [Column("modelId")]
     public int? ModelId { get; set; }
 
@@ -212,7 +222,7 @@ public class Stencil
     /// </summary>
     [Verbose]
     [Column("note")]
-    [MaxLength(50, ErrorMessage = "Note must be no longer than 50 characters.")]
+    [StringLength(50, ErrorMessage = "Note must be no longer than 50 characters.")]
     public string? Note { get; set; }
 }
 

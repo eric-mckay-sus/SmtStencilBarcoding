@@ -9,11 +9,16 @@
     <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
         <div class="expandable-content">
             <div class="form-card mb-3">
-                <EditForm Model="@EditItem" OnValidSubmit="@(() => HandleValidSubmit())">
+                <EditForm Model="@EditItem" OnValidSubmit="@(() => HandleValidSubmit(true))">
                     <DataAnnotationsValidator />
                     <div class="form-container">
                         <h5 class="form-title">Stencil Details</h5>
                         <div class="row g-3">
+                            <div class="col-2">
+                                <label for="name" class="form-label">Barcode (exclude MSK):</label>
+                                <InputNumber id="name" @bind-Value="EditItem.Barcode" class="form-control" autocomplete="off" placeholder="" />
+                                <ValidationMessage For="@(() => EditItem.Barcode)" />
+                            </div>
                             <div class="col-2">
                                 <label for="name" class="form-label">Stencil Maker:</label>
                                 <InputText id="name" @bind-Value="EditItem.Maker" class="form-control" autocomplete="off" />
@@ -32,12 +37,12 @@
                                     max="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
                                 <ValidationMessage For="@(() => EditItem.ReceiveDate)" />
                             </div>
-                            <div class="col-2">
+                            <div class="col-1">
                                 <label for="cycle" class="form-label">Cycle Count:</label>
                                 <InputNumber id="cycle" @bind-Value="EditItem.CycleCount" class="form-control" />
                                 <ValidationMessage For="@(() => EditItem.CycleCount)" />
                             </div>
-                            <div class="col-2">
+                            <div class="col-1">
                                 <label for="thickness" class="form-label">Thickness (mm):</label>
                                 <InputNumber id="thickness" @bind-Value="dummyThickness" @bind-Value:after="ResolveThickness" class="form-control" />
                                 <ValidationMessage For="@(() => EditItem.Thickness)" />
