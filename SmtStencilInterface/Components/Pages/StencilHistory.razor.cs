@@ -4,6 +4,8 @@
 
 namespace SmtStencilInterface.Components.Pages;
 
+using Microsoft.AspNetCore.Components;
+
 /// <summary>
 /// Code-behind for the model creation page.
 /// </summary>
@@ -11,6 +13,18 @@ public partial class StencilHistory : TableManager<StencilStatusChange, Enhanced
 {
     private DateTime? updatedAfter;
     private DateTime? updatedBefore;
+
+    /// <summary>
+    /// Gets or sets the targeted stencil.
+    /// </summary>
+    [Parameter]
+    public EnhancedStencil? Target { get; set; }
+
+    /// <summary>
+    /// Gets or sets the action to take when the signal is sent for this component to be closed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
 
     /// <summary>
     /// Gets the message to show when there are no status updates in <see cref="TableManager{TWrite, TRead}.DataView"/>.
@@ -64,6 +78,11 @@ public partial class StencilHistory : TableManager<StencilStatusChange, Enhanced
         if (this.updatedBefore.HasValue)
         {
             query = query.Where(x => x.Timestamp < this.updatedBefore.Value);
+        }
+
+        if (this.Target is not null)
+        {
+            query = query.Where(x => x.Barcode == this.Target.Barcode);
         }
 
         return query;

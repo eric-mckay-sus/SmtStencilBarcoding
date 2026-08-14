@@ -125,7 +125,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// <summary>
     /// Gets or sets the item to be added (from the add/update form).
     /// </summary>
-    private protected TWrite NewItem { get; set; } = new ();
+    private protected TWrite EditItem { get; set; } = new ();
 
     /// <summary>
     /// Gets or sets the thread-safe DB context generator.
@@ -146,12 +146,6 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// <returns>The task for the load operation.</returns>
     public virtual async Task RefreshData(bool keepPage = false)
     {
-        Console.WriteLine("Filter dump");
-        foreach (IFilter filter in this.Filters.Values)
-        {
-            Console.WriteLine($"{filter.Key}: {filter.GetValue()}");
-        }
-
         if (!keepPage)
         {
             this.CurrentPage = 1;
@@ -397,7 +391,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// </summary>
     protected virtual void CloseForm()
     {
-        this.NewItem = new ();
+        this.EditItem = new ();
         this.IsFormVisible = false;
         this.ErrorMessage = null;
     }
@@ -406,7 +400,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// On submit, attempt to insert/update into table, and catch potential constraint violations.
     /// </summary>
     /// <param name="isInsert">A value indicating whether this submission is an insert (or an update).</param>
-    /// <returns>A Task representing that <see cref="NewItem"/> has been successfully inserted/updated.</returns>
+    /// <returns>A Task representing that <see cref="EditItem"/> has been successfully inserted/updated.</returns>
     protected virtual async Task HandleValidSubmit(bool isInsert = false)
     {
         this.ErrorMessage = null;
@@ -415,11 +409,11 @@ public class TableManager<TWrite, TRead> : TableManagerBase
             using SmtStencilingDbContext context = this.DbFactory.CreateDbContext();
             if (isInsert)
             {
-                context.Set<TWrite>().Add(this.NewItem);
+                context.Set<TWrite>().Add(this.EditItem);
             }
             else
             {
-                context.Set<TWrite>().Update(this.NewItem);
+                context.Set<TWrite>().Update(this.EditItem);
             }
 
             await context.SaveChangesAsync();
@@ -448,7 +442,7 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     }
 
     /// <summary>
-    /// Hook for children to change the view before <see cref="NewItem"/>  is cleared.
+    /// Hook for children to change the view before <see cref="EditItem"/>  is cleared.
     /// </summary>
     protected virtual void InsertPostRefreshSequence()
     {

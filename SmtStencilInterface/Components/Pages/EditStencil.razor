@@ -9,44 +9,44 @@
     <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
         <div class="expandable-content">
             <div class="form-card mb-3">
-                <EditForm Model="@NewItem" OnValidSubmit="@(async () => await HandleValidSubmit(isInsert: false))">
+                <EditForm Model="@EditItem" OnValidSubmit="@(async () => await HandleValidSubmit(isInsert: false))">
                     <DataAnnotationsValidator />
                     <div class="form-container">
                         <h5 class="form-title">Stencil Details</h5>
                         <div class="row g-3">
                             <div class="col-2">
                                 <label for="name" class="form-label" disabled="disabled">Stencil Maker:</label>
-                                <input id="name" value="@NewItem.Maker" class="form-control" autocomplete="off" disabled="true" />
+                                <input id="name" value="@EditItem.Maker" class="form-control" autocomplete="off" disabled="true" />
                             </div>
                             <div class="col-2">
                                 <label for="panelNum" class="form-label">Job Number:</label>
-                                <InputText id="panelNum" @bind-Value="NewItem.JobNum" class="form-control" autocomplete="off" />
-                                <ValidationMessage For="@(() => NewItem.JobNum)" />
+                                <InputText id="panelNum" @bind-Value="EditItem.JobNum" class="form-control" autocomplete="off" />
+                                <ValidationMessage For="@(() => EditItem.JobNum)" />
                             </div>
                             <div class="col-2">
                                 <label class="form-label">Date Received</label>
                                 <input type="date"
                                     class="form-control"
-                                    @bind="NewItem.ReceiveDate"
+                                    @bind="EditItem.ReceiveDate"
                                     max="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
-                                <ValidationMessage For="@(() => NewItem.ReceiveDate)" />
+                                <ValidationMessage For="@(() => EditItem.ReceiveDate)" />
                             </div>
                             <div class="col-2">
                                 <label for="cycle" class="form-label">Cycle Count:</label>
-                                <InputNumber id="cycle" @bind-Value="NewItem.CycleCount" class="form-control" />
-                                <ValidationMessage For="@(() => NewItem.CycleCount)" />
+                                <InputNumber id="cycle" @bind-Value="EditItem.CycleCount" class="form-control" />
+                                <ValidationMessage For="@(() => EditItem.CycleCount)" />
                             </div>
                             <div class="col-2">
                                 <label for="thickness" class="form-label" disabled="disabled">Thickness (mm):</label>
-                                <input id="thickness" value="@((short?)NewItem.Thickness)" class="form-control" disabled="true" />
+                                <input id="thickness" value="@((short?)EditItem.Thickness)" class="form-control" disabled="true" />
                             </div>
                             <div class="col-2">
                                 <label class="form-label">Expiration Date</label>
                                 <input type="date"
                                     class="form-control"
-                                    @bind="NewItem.ExpirationDate"
+                                    @bind="EditItem.ExpirationDate"
                                     min="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
-                                <ValidationMessage For="@(() => NewItem.ExpirationDate)" />
+                                <ValidationMessage For="@(() => EditItem.ExpirationDate)" />
                             </div>
                         </div>
                         <div class="row g-3">
@@ -59,35 +59,35 @@
                                         <option value="@m">@m</option>
                                     }
                                 </datalist>
-                                <ValidationMessage For="@(() => NewItem.ModelId)" />
+                                <ValidationMessage For="@(() => EditItem.ModelId)" />
                             </div>
                             <div class="col-3">
                                 <label for="line" class="form-label">Location:</label>
-                                <InputText list="lines" id="line" @bind-Value="NewItem.Location" class="form-control" autocomplete="off" />
+                                <InputText list="lines" id="line" @bind-Value="EditItem.Location" class="form-control" autocomplete="off" />
                                 <datalist id="lines">
                                     @foreach (string l in availableLines)
                                     {
                                         <option value="@l">@l</option>
                                     }
                                 </datalist>
-                                <ValidationMessage For="@(() => NewItem.Location)" />
+                                <ValidationMessage For="@(() => EditItem.Location)" />
                             </div>
                             <div class="col-3">
                                 <label for="status" class="form-label">Status</label>
                                 <select id="status" class="form-select" value="@targetStatus" disabled="true" title="To update stencil status, please use the dedicated status update page.">
                                     <option>@targetStatus</option>
                                 </select>
-                                <ValidationMessage For="@(() => NewItem.StatusCode)" />
+                                <ValidationMessage For="@(() => EditItem.StatusCode)" />
                             </div>
                             <div class="col-3">
                                 <label for="note" class="form-label">Note:</label>
-                                <input id="note" value="@NewItem.Note" class="form-control" autocomplete="off" disabled="true" />
+                                <input id="note" value="@EditItem.Note" class="form-control" autocomplete="off" disabled="true" />
                             </div>
                         </div>
                         <UploadCheckplot
-                            SerializedFile="NewItem.Checkplot"
-                            OnFileUploaded="@((file) => NewItem.Checkplot = file)"
-                            OnFileCleared="@(() => NewItem.Checkplot = new byte[UploadCheckplot.MaxFileSize])"
+                            SerializedFile="EditItem.Checkplot"
+                            OnFileUploaded="@((file) => EditItem.Checkplot = file)"
+                            OnFileCleared="@(() => EditItem.Checkplot = new byte[UploadCheckplot.MaxFileSize])"
                             HasOriginalFile="@(target?.HasCheckplot ?? false)" />
 
                         <div class="form-actions d-flex justify-content-center gap-4">

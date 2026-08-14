@@ -1,23 +1,37 @@
-﻿@page "/stencil-history"
-@inherits TableManager<StencilStatusChange, EnhancedStencilStatusChange>
+﻿@inherits TableManager<StencilStatusChange, EnhancedStencilStatusChange>
 
-<PageTitle>Stencil History</PageTitle>
+@* Header for when this page operates standalone *@
+@if(Target is null){
+    @page "/stencil-history"
+    <PageTitle>Stencil History</PageTitle>
 
-<h2>Stencil Status Update History</h2>
+    <h2>Stencil Status Update History</h2>
+}
+else
+{
+    <h2>Status updates for <strong>@Target.Model</strong> stencil with barcode <strong>@Target.Barcode</strong></h2>
+}
 
+<span>
+    @if (OnClose.HasDelegate){
+        <button type="button" class="btn-close" title="Close status update history split screen" @onclick="OnClose"></button>
+    }
+</span>
 <div class="row g-3 pt-2 mb-2">
-    <span class="col-1" />
+    @if (Target is null){
+        <span class="col-1" />
+    }
     <div class="col-4">
         <label class="form-label">Updated After</label>
         <input type="datetime-local" class="form-control" @bind="updatedAfter" />
     </div>
-    <span class="col-2 centered-container mx-3" >
-        <Button Size="ButtonSize.Small" Color="ButtonColor.Secondary" Outline="true" Class="me-2" @onclick="ClearDateFilters">
-            Clear Date Filters
+    <span class="@(Target is null ? "col-2" : "col-3") centered-container mx-3" >
+        <Button Color="ButtonColor.Secondary" Outline="true" Class="me-2" @onclick="ClearDateFilters">
+            Clear
         </Button>
         <Icon Name="IconName.ClockFill" Color="IconColor.Info" Style="font-size: 36px" />
-        <Button Size="ButtonSize.Small" Color="ButtonColor.Success" Class="ms-2" @onclick="() => RefreshData()">
-            Apply Date Filters
+        <Button Color="ButtonColor.Success" Class="ms-2" @onclick="() => RefreshData()">
+            Apply
         </Button>
     </span>
     <div class="col-4">
@@ -28,4 +42,6 @@
 
 <TablePresenter TWrite="StencilStatusChange"
                 TRead="EnhancedStencilStatusChange"
+                NoCsv="@(Target is not null)"
+                OnExpand="() => {}"
                 Base="this" />

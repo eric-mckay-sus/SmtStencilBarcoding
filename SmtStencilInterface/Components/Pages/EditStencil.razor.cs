@@ -91,7 +91,7 @@ public partial class EditStencil : TableManager<Stencil, EnhancedStencil>
     {
         using (SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync())
         {
-            this.NewItem.ModelId = await context.ModelToPanel
+            this.EditItem.ModelId = await context.ModelToPanel
                                                 .AsNoTracking()
                                                 .Where(mp => mp.Model == this.targetModel)
                                                 .Select(mp => mp.Id)
@@ -107,7 +107,7 @@ public partial class EditStencil : TableManager<Stencil, EnhancedStencil>
             this.targetModel = null;
             this.targetStatus = null;
             this.IsFormVisible = false;
-            this.NewItem = new ();
+            this.EditItem = new ();
             return;
         }
 
@@ -120,7 +120,7 @@ public partial class EditStencil : TableManager<Stencil, EnhancedStencil>
 
         using (SmtStencilingDbContext context = this.DbFactory.CreateDbContext())
         {
-            this.NewItem = context.Stencils.FirstOrDefault(s => s.Barcode == barcodeNum);
+            this.EditItem = context.Stencils.FirstOrDefault(s => s.Barcode == barcodeNum);
         }
     }
 }

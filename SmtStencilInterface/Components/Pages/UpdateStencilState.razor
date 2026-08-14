@@ -1,12 +1,73 @@
-﻿@page "/update-stencil-state"
-@inherits TableManager<StencilStatusChange, EnhancedStencilStatusChange>
+﻿@inherits TableManager<Stencil, EnhancedStencil>
 
-<PageTitle>Update Stencils</PageTitle>
+<div class="expandable-container">
+    <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
+        <div class="expandable-content">
+            <div class="form-card mb-3">
+                <EditForm Model="@formModel" OnValidSubmit="@(async () => await HandleValidSubmit(isInsert: false))">
+                    <DataAnnotationsValidator />
+                    <div class="form-container">
+                        <h5 class="form-title">Stencil Details</h5>
+                        <div class="row g-3">
+                            <div class="col-1">
+                                <label for="name" class="form-label" disabled="disabled">Barcode:</label>
+                                <input id="name" value='@($"MSK{EditItem.Barcode}")' class="form-control" autocomplete="off" disabled="true" />
+                            </div>
+                            <div class="col-2">
+                                <label for="model" class="form-label">Model Name:</label>
+                                <input id="model" value="@Target?.Model" class="form-control" autocomplete="off" disabled="true" />
+                            </div>
+                            <div class="col-1">
+                                <label for="line" class="form-label">Location:</label>
+                                <input id="line" value="@EditItem.Location" class="form-control" autocomplete="off" disabled="true" />
+                            </div>
+                            <div class="col-1">
+                                <label for="status" class="form-label">Current Status</label>
+                                <select id="status" class="form-select" disabled="true">
+                                    <option>@Target?.StatusText</option>
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <label for="status" class="form-label">New Status</label>
+                                <select id="status" class="form-select" @bind="@formModel.NewStatus" @bind:after="ResolveStatus">
+                                    <option value="">--Select a new status--</option>
+                                    @foreach(string s in availableStatuses)
+                                    {
+                                        <option value="@s">@s</option>
+                                    }
+                                </select>
+                                <ValidationMessage For="@(() => formModel.NewStatus)" />
+                            </div>
+                            <div class="col-1">
+                                <label for="associateNum" class="form-label">Associate #:</label>
+                                <input type="number" id="associateNum" @bind="formModel.AssociateNum" class="form-control" max="999999" autocomplete="off" placeholder="Enter associate number..." />
+                                <ValidationMessage For="@(() => formModel.AssociateNum)" />
+                            </div>
+                            <div class="col-3">
+                                <label for="note" class="form-label">Note:</label>
+                                <InputText id="note" @bind-Value="formModel.Note" class="form-control" autocomplete="off" placeholder="Add a short note explaining the status change (optional)" />
+                                <ValidationMessage For="@(() => formModel.Note)" />
+                            </div>
+                        </div>
 
-<h1>Stencil table with expand/edit options</h1>
+                        <div class="form-actions d-flex justify-content-center gap-4">
+                            <button type="button" class="btn btn-outline-secondary btn-lg me-2" @onclick="CloseForm">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-floppy"></i> Change Status
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+                <ErrorDisplay ErrorMessage="@ErrorMessage" />
+            </div>
+        </div>
+    </div>
+</div>
 
-<h1>Edit option opens state change form</h1>
-
-<TablePresenter TWrite="StencilStatusChange"
-                TRead="EnhancedStencilStatusChange"
+<TablePresenter TWrite="Stencil"
+                TRead="EnhancedStencil"
+                OnExpand="() => {}"
+                OnEdit="HandleEdit"
+                OnHistory="OpenHistory"
+                Target="Target"
                 Base="this" />
