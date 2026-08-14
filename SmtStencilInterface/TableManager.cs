@@ -146,12 +146,6 @@ public class TableManager<TWrite, TRead> : TableManagerBase
     /// <returns>The task for the load operation.</returns>
     public virtual async Task RefreshData(bool keepPage = false)
     {
-        Console.WriteLine("Filter dump");
-        foreach (IFilter filter in this.Filters.Values)
-        {
-            Console.WriteLine($"{filter.Key}: {filter.GetValue()}");
-        }
-
         if (!keepPage)
         {
             this.CurrentPage = 1;

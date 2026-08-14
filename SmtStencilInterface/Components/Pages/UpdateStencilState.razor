@@ -1,12 +1,9 @@
-﻿@page "/update-stencil-state"
-@inherits TableManager<StencilStatusChange, EnhancedStencilStatusChange>
+﻿@inherits TableManager<Stencil, EnhancedStencil>
 
-<PageTitle>Update Stencils</PageTitle>
-
-<h1>Stencil table with expand/edit options</h1>
-
-<h1>Edit option opens state change form</h1>
-
-<TablePresenter TWrite="StencilStatusChange"
-                TRead="EnhancedStencilStatusChange"
+<TablePresenter TWrite="Stencil"
+                TRead="EnhancedStencil"
+                OnExpand="() => {}"
+                OnEdit="() => {}"
+                OnHistory="OpenHistory"
+                Target="Target"
                 Base="this" />

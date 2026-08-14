@@ -19,11 +19,11 @@
     OnEdit="OnEdit"
     OnExpand="OnExpand"
     OnDownload="OnDownload"
-    OnDeny="OnDeny"
-    OnRemake="OnRemake"
+    OnHistory="OnHistory"
     Target="Target"
     TargetStyle="@TargetStyle"
-    OnSaveToCsv="Base.SaveToCSV"/>
+    OnSaveToCsv="Base.SaveToCSV"
+    NoCsv="NoCsv" />
 
 @code{
     [Parameter, EditorRequired]
@@ -32,9 +32,8 @@
     [Parameter] public EventCallback<TRead> OnExpand { get; set; }
     [Parameter] public EventCallback<TRead> OnEdit { get; set; }
     [Parameter] public EventCallback<TRead> OnDownload { get; set; }
-    [Parameter] public EventCallback<TRead> OnDeny { get; set; }
-    [Parameter] public EventCallback<TRead> OnRemake { get; set; }
+    [Parameter] public EventCallback<TRead> OnHistory { get; set; }
     [Parameter] public TRead? Target { get; set; }
     [Parameter] public string? TargetStyle { get; set; }
-    [Parameter] public EventCallback OnSaveToCsv { get; set; }
+    [Parameter] public bool NoCsv { get; set; }
 }

@@ -1,0 +1,44 @@
+@page "/update-stencil-state"
+
+<PageTitle>Update Stencils</PageTitle>
+
+<h2>Update Stencil Status</h2>
+
+<div class="row overflow-hidden flex-nowrap">
+    @* Split screen when expanded, otherwise fullscreen the stencil view *@
+    <div class="@(isTargeting ? "col-7" : "col-12") transition-width">
+        <UpdateStencilState Target="target" OpenHistory="OpenHistory" OnItemChanged="HandleEnhancedStencilNotShown"/>
+    </div>
+    <div class="@(isTargeting ? "col-5" : "col-0") transition-width overflow-hidden"
+         style="@(isTargeting ? "" : "display:none;")">
+            @if (isTargeting) {
+                <StencilHistory Target="target" OnClose="HandleClose" />
+            }
+    </div>
+</div>
+
+@code{
+    private EnhancedStencil? target;
+    private bool isTargeting = false;
+
+    private void OpenHistory(EnhancedStencil enhancedStencil) {
+        if (enhancedStencil.Equals(target)){
+            HandleClose();
+        } else {
+            target = enhancedStencil;
+            isTargeting = true;
+        }
+    }
+    private void HandleClose(){
+        target = null;
+        isTargeting = false;
+    }
+
+    private void HandleEnhancedStencilNotShown(EnhancedStencil changedEnhancedStencil)
+    {
+        if (target != null && changedEnhancedStencil.Equals(target))
+        {
+            HandleClose();
+        }
+    }
+}

@@ -94,6 +94,12 @@ public partial class UniversalTable<T>
     [Parameter]
     public EventCallback OnSaveToCsv { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether to NOT display the save to CSV button.
+    /// </summary>
+    [Parameter]
+    public bool NoCsv { get; set; }
+
     // Filters
 
     /// <summary>
@@ -149,18 +155,10 @@ public partial class UniversalTable<T>
     public EventCallback<T> OnDownload { get; set; }
 
     /// <summary>
-    /// Gets or sets the action to bind to denial.
+    /// Gets or sets the action to bind to history viewing.
     /// </summary>
     [Parameter]
-    public EventCallback<T> OnDeny { get; set; }
-
-    // Remake request
-
-    /// <summary>
-    /// Gets or sets the action to bind to remake.
-    /// </summary>
-    [Parameter]
-    public EventCallback<T> OnRemake { get; set; }
+    public EventCallback<T> OnHistory { get; set; }
 
     // Pagination
 
@@ -215,7 +213,7 @@ public partial class UniversalTable<T>
     /// <summary>
     /// Gets a value indicating whether to show the actions column.
     /// </summary>
-    private bool ShowActions => this.OnExpand.HasDelegate || this.OnEdit.HasDelegate || this.OnDownload.HasDelegate || this.OnRemake.HasDelegate;
+    private bool ShowActions => this.OnExpand.HasDelegate || this.OnEdit.HasDelegate || this.OnDownload.HasDelegate || this.OnHistory.HasDelegate;
 
     private bool ShowFilterClear => this.filterInputs.Values.Any(f => !string.IsNullOrEmpty(f));
 

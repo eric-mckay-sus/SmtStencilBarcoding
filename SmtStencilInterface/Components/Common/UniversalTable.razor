@@ -25,10 +25,12 @@
                     <span>Clear Filters</span>
                 </Button>
             }
-            <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
-                <Icon Name="IconName.Download" />
-                <span>Save to CSV</span>
-            </Button>
+            @if (!NoCsv){
+                <Button Color="ButtonColor.Success" Size="ButtonSize.Small" Outline="true" Class="ms-2" @onclick="OnSaveToCsv">
+                    <Icon Name="IconName.Download" />
+                    <span>Save to CSV</span>
+                </Button>
+            }
         </div>
         <nav>
             <ul class="pagination mt-3">
@@ -154,21 +156,12 @@ else if (Items != null)
                                         <Icon Name="IconName.Download" Size="IconSize.x4" />
                                     </button>
                                 }
-                                @if (OnRemake.HasDelegate)
-                                {
+                                @if (OnHistory.HasDelegate){
                                     <button class="btn btn-link btn-action p-0 me-2"
-                                            @onclick="() => OnRemake.InvokeAsync(item)"
+                                            @onclick="() => OnHistory.InvokeAsync(item)"
                                             @onclick:stopPropagation
-                                            title="Request Remake">
-                                        <Icon Name="IconName.ArrowClockwise" Size="IconSize.x4" />
-                                    </button>
-                                }
-                                @if (OnDeny.HasDelegate){
-                                    <button class="btn btn-link btn-action p-0 me-2"
-                                            @onclick="() => OnDeny.InvokeAsync(item)"
-                                            @onclick:stopPropagation
-                                            title="Deny">
-                                        <Icon Name="IconName.XLg" Size="IconSize.x4" Color="IconColor.Danger" />
+                                            title="Status History">
+                                        <Icon Name="IconName.ClockHistory" Size="IconSize.x4"/>
                                     </button>
                                 }
                             </td>
