@@ -56,6 +56,6 @@ public partial class CreateModel : TableManager<ModelPanel, ModelPanel>
     /// </summary>
     protected override void InsertPostRefreshSequence()
     {
-        this.ToastService.Notify(new (ToastType.Success, $"New panel {this.NewItem.PanelNum} created for model {this.NewItem.Model}"));
+        this.ToastService.Notify(new (ToastType.Success, $"New panel {this.EditItem.PanelNum} created for model {this.EditItem.Model}"));
     }
 }

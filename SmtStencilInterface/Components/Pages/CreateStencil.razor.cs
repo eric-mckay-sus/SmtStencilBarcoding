@@ -94,10 +94,10 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
     {
         using (SmtStencilingDbContext context = this.DbFactory.CreateDbContext())
         {
-            this.target = context.EnhancedStencilView.FirstOrDefault(es => es.Barcode.Contains(this.NewItem.Barcode.ToString()));
+            this.target = context.EnhancedStencilView.FirstOrDefault(es => es.Barcode.Contains(this.EditItem.Barcode.ToString()));
         }
 
-        this.ToastService.Notify(new (ToastType.Success, $"New stencil MSK{this.NewItem.Barcode} created successfully!"));
+        this.ToastService.Notify(new (ToastType.Success, $"New stencil MSK{this.EditItem.Barcode} created successfully!"));
 
         this.targetModel = null;
         this.targetStatus = null;
@@ -108,7 +108,7 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
     {
         using (SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync())
         {
-            this.NewItem.ModelId = await context.ModelToPanel
+            this.EditItem.ModelId = await context.ModelToPanel
                                                 .AsNoTracking()
                                                 .Where(mp => mp.Model == this.targetModel)
                                                 .Select(mp => mp.Id)
@@ -120,13 +120,13 @@ public partial class CreateStencil : TableManager<Stencil, EnhancedStencil>
     {
         using (SmtStencilingDbContext context = await this.DbFactory.CreateDbContextAsync())
         {
-            this.NewItem.StatusCode = await context.StatusCodes
+            this.EditItem.StatusCode = await context.StatusCodes
                                                     .AsNoTracking()
                                                     .Where(sc => sc.Status == this.targetStatus)
                                                     .Select(sc => sc.Code)
-                                                    .FirstAsync();
+                                                    .FirstOrDefaultAsync();
         }
     }
 
-    private async Task ResolveThickness() => this.NewItem.Thickness = (byte)this.dummyThickness;
+    private async Task ResolveThickness() => this.EditItem.Thickness = (byte)this.dummyThickness;
 }

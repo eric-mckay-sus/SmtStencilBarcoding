@@ -53,6 +53,14 @@ public class SmtStencilingDbContext(DbContextOptions<SmtStencilingDbContext> opt
     /// Gets or sets the associate information table.
     /// </summary>
     public DbSet<Associate> AssociateInfo { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Stencil>(entity =>
+    {
+        entity.ToTable("Stencils", tb => tb.HasTrigger("LogStencilStatusChange"));
+    });
+}
 }
 
 /// <summary>

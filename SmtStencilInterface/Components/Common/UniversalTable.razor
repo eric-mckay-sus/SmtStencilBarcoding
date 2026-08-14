@@ -72,7 +72,7 @@ else if (Items != null)
                 <tr class="filter-row bg-light" style="border: none;">
                     @foreach (var prop in GetVisibleProperties())
                     {
-                        <td>
+                        <td class='@($"col-{prop.Name}")'>
                             @foreach(string key in Filters.Keys)
                             {
                                 string lowerKey = key.ToLower();

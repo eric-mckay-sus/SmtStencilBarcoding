@@ -9,26 +9,26 @@
     <div class="expandable-wrapper @(IsFormVisible ? "is-expanded" : "")">
         <div class="expandable-content">
             <div class="form-card mb-3">
-                <EditForm Model="@NewItem" OnValidSubmit="@(() => HandleValidSubmit())">
+                <EditForm Model="@EditItem" OnValidSubmit="@(() => HandleValidSubmit())">
                     <DataAnnotationsValidator />
                     <div class="form-container">
                         <h5 class="form-title">Model Details</h5>
                         <div class="row g-3">
                             <div class="col-6">
                                 <label for="name" class="form-label">Model Name:</label>
-                                <InputText list="models" id="name" @bind-Value="NewItem.Model" class="form-control" autocomplete="off" />
+                                <InputText list="models" id="name" @bind-Value="EditItem.Model" class="form-control" autocomplete="off" />
                                 <datalist id="models">
                                     @foreach (string m in availableModels)
                                     {
                                         <option value="@m">@m</option>
                                     }
                                 </datalist>
-                                <ValidationMessage For="@(() => NewItem.Model)" />
+                                <ValidationMessage For="@(() => EditItem.Model)" />
                             </div>
                             <div class="col-3">
                                 <label for="panelNum" class="form-label">Panel Number:</label>
-                                <InputText id="panelNum" @bind-Value="NewItem.PanelNum" class="form-control" autocomplete="off" />
-                                <ValidationMessage For="@(() => NewItem.PanelNum)" />
+                                <InputText id="panelNum" @bind-Value="EditItem.PanelNum" class="form-control" autocomplete="off" />
+                                <ValidationMessage For="@(() => EditItem.PanelNum)" />
                             </div>
                         </div>
 

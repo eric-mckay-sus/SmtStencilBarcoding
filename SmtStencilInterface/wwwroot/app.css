@@ -181,7 +181,8 @@ h1:focus {
 
 @container table-container (max-width: 1200px) {
     .col-ExpirationDate,
-    .col-Thickness {
+    .col-Thickness,
+    .col-CycleCount {
         display: none;
     }
 }
